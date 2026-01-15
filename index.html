@@ -8,116 +8,188 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root {
-      --bg: #0b1220;
-      --muted: #8fa3c0;
-      --text: #eaf1ff;
-      --border: rgba(255,255,255,.08);
-      --good: #29d391;
-      --warn: #ffd166;
-      --bad:  #ff5c7a;
+    :root{
+      --bg:#0b1220;
+      --muted:#8fa3c0;
+      --text:#eaf1ff;
+      --border:rgba(255,255,255,.08);
+      --card:rgba(255,255,255,.03);
+
+      --good:#29d391;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
+
+      --goodB:rgba(41,211,145,.45);
+      --warnB:rgba(255,209,102,.35);
+      --badB: rgba(255,92,122,.45);
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
       background: radial-gradient(1200px 800px at 20% 0%, #132043 0%, var(--bg) 55%);
-      color: var(--text);
+      color:var(--text);
     }
-    header {
-      padding: 18px 22px;
-      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-      border-bottom: 1px solid var(--border);
+    header{
+      padding:18px 22px;
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid var(--border);
       backdrop-filter: blur(8px);
-      position: sticky; top: 0;
+      position:sticky; top:0;
       background: rgba(11,18,32,.55);
+      z-index:10;
     }
-    h1 { margin: 0; font-size: 18px; letter-spacing: .2px; }
-    .meta { color: var(--muted); font-size: 12px; display:flex; gap: 16px; flex-wrap: wrap; }
-    .controls { display:flex; gap: 10px; align-items: center; }
-    .controls label { font-size: 12px; color: var(--muted); }
+    h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .controls{ display:flex; gap:10px; align-items:center; }
+    .controls label{ font-size:12px; color:var(--muted); }
     input[type="number"]{
-      width: 110px;
+      width:110px;
       background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 8px 10px;
-      outline: none;
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:10px;
+      padding:8px 10px;
+      outline:none;
     }
     button{
       background: rgba(255,255,255,.06);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 8px 10px;
-      cursor: pointer;
-      font-weight: 650;
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:10px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:650;
     }
     button:hover{ background: rgba(255,255,255,.09); }
 
-    .wrap { padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
+    .wrap{ padding:18px 22px 28px; max-width:1200px; margin:0 auto; }
 
-    .card {
+    .grid2{
+      display:grid;
+      gap:14px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 960px){ .grid2{ grid-template-columns:1fr; } }
+
+    .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
       box-shadow: 0 10px 28px rgba(0,0,0,.25);
     }
-    .card h2 { margin: 0 0 10px; font-size: 14px; color: #cfe0ff; font-weight: 650; }
+    .card h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:#cfe0ff;
+      font-weight:650;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .subtitle{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+    }
 
-    .kpi-grid {
-      display: grid; gap: 10px;
+    .kpi-grid{
+      display:grid;
+      gap:10px;
       grid-template-columns: repeat(4, minmax(0,1fr));
     }
     @media (max-width: 960px){ .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
-    .kpi {
-      padding: 12px;
-      border-radius: 12px;
+    .kpi{
+      padding:12px;
+      border-radius:12px;
       background: rgba(255,255,255,.03);
-      border: 1px solid var(--border);
+      border:1px solid var(--border);
     }
-    .kpi .name { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-    .kpi .val { font-size: 22px; font-weight: 750; letter-spacing: .2px; }
-    .kpi .sub { margin-top: 6px; font-size: 12px; color: var(--muted); display:flex; justify-content: space-between; }
+    .kpi .name{ font-size:12px; color:var(--muted); margin-bottom:8px; }
+    .kpi .val{ font-size:22px; font-weight:800; letter-spacing:.2px; }
+    .kpi .sub{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+    }
 
-    .pill { padding: 2px 8px; border-radius: 999px; font-weight: 650; border: 1px solid var(--border); }
-    .pill.good{ color: var(--good); }
-    .pill.warn{ color: var(--warn); }
-    .pill.bad{  color: var(--bad);  }
+    .pill{
+      padding:2px 8px;
+      border-radius:999px;
+      font-weight:800;
+      border:1px solid var(--border);
+      white-space:nowrap;
+    }
+    .pill.good{ color:var(--good); }
+    .pill.warn{ color:var(--warn); }
+    .pill.bad { color:var(--bad); }
 
-    .row {
-      display: grid; gap: 14px;
+    .row{
+      display:grid;
+      gap:14px;
       grid-template-columns: 1fr 1fr;
-      margin-top: 14px;
+      margin-top:14px;
     }
-    @media (max-width: 960px){ .row{ grid-template-columns: 1fr; } }
+    @media (max-width: 960px){ .row{ grid-template-columns:1fr; } }
 
-    canvas { width: 100% !important; height: 280px !important; }
+    canvas{ width:100% !important; height:320px !important; }
 
-    table {
-      width: 100%; border-collapse: collapse; font-size: 12px;
-      overflow: hidden; border-radius: 12px; border: 1px solid var(--border);
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid var(--border);
     }
-    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
-    th { text-align: left; color: #cfe0ff; background: rgba(255,255,255,.03); }
-    td { color: #eaf1ff; }
-    tr:last-child td { border-bottom: none; }
-    .right { text-align: right; }
-    .muted { color: var(--muted); }
+    th, td{ padding:10px 10px; border-bottom:1px solid var(--border); }
+    th{ text-align:left; color:#cfe0ff; background: rgba(255,255,255,.03); }
+    td{ color:#eaf1ff; }
+    tr:last-child td{ border-bottom:none; }
+    .right{ text-align:right; }
 
-    .alert {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .alert{
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
       background: rgba(255,255,255,.03);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
     }
-    code { color: #cfe0ff; }
+    code{ color:#cfe0ff; }
+
+    .legend{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .dot{
+      display:inline-block; width:10px; height:10px; border-radius:50%;
+      margin-right:6px;
+      border:1px solid var(--border);
+      vertical-align:middle;
+    }
   </style>
 </head>
 
@@ -136,10 +208,34 @@
 </header>
 
 <div class="wrap">
-  <div class="card">
-    <h2>KPI's (Día vs Acumulado)</h2>
-    <div id="kpiGrid" class="kpi-grid"></div>
-    <div id="help" class="alert" style="display:none;"></div>
+
+  <!-- DÍA / MES en 2 columnas (layout ejecutivo) -->
+  <div class="grid2">
+    <div class="card">
+      <h2>
+        <span>KPIs del Día</span>
+        <span id="dayLabel" class="subtitle">Día</span>
+      </h2>
+      <div id="kpiGridDay" class="kpi-grid"></div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--good);"></span>OK</span>
+        <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
+        <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span>KPIs Acumulado Mes</span>
+        <span id="acumLabel" class="subtitle">Acum</span>
+      </h2>
+      <div id="kpiGridAcum" class="kpi-grid"></div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--good);"></span>OK</span>
+        <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
+        <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
+      </div>
+    </div>
   </div>
 
   <div class="row">
@@ -149,7 +245,7 @@
     </div>
 
     <div class="card">
-      <h2>Detalle</h2>
+      <h2>Detalle (formateado)</h2>
       <table>
         <thead>
           <tr>
@@ -160,23 +256,60 @@
         </thead>
         <tbody id="detailBody"></tbody>
       </table>
+
+      <div id="help" class="alert" style="display:none;"></div>
       <div class="muted" style="margin-top:10px;font-size:12px;">
         Se reconsulta en cada refresh.
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
   // ============================================================================
-  const PUBLISHED_KEY = "2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
+  // TU PUBLICACIÓN
+  // ============================================================================
+  const PUBLISHED_KEY =
+    "2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
 
+  // Si la pestaña publicada no es la primera, cambiar: 0, 1, 2...
   const GID = 0;
 
-  // Endpoint CSV
   const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
-
   // ============================================================================
+
+  // Orden deseado (opcional). Si tu hoja trae más o menos, se ajusta.
+  const KPI_ORDER = [
+    "Cumplimiento plan de servicio",
+    "Cumplimiento plan de kms",
+    "Comparación kms ejecutados vs WARA",
+    "Titularidad",
+    "Cumplimiento plan Hs Extras Conducción",
+    "Siniestros",
+    "Reclamos de clientes",
+    "IPK"
+  ];
+
+  // Reglas de semáforo por KPI (ajustables)
+  // type=min => cuanto más alto mejor
+  // type=max => cuanto más bajo mejor
+  const RULES = [
+    { match: /cumplimiento/i, type: "min", green: 98, yellow: 95 },    // %
+    { match: /titularidad/i,  type: "min", green: 95, yellow: 92 },    // %
+    { match: /siniestros/i,   type: "max", green: 0,  yellow: 1  },    // conteo
+    { match: /reclamos/i,     type: "max", green: 0,  yellow: 1  },    // conteo
+    { match: /ipk/i,          type: "min", green: 0.60, yellow: 0.55 } // ratio
+  ];
+
+  // Heurística para tipo/format del KPI si no matchea reglas
+  function inferKind(indicador, raw){
+    const s = String(raw ?? "").trim();
+    if (/ipk/i.test(indicador)) return "ratio";
+    if (/siniestros|reclamos/i.test(indicador)) return "int";
+    if (s.includes("%") || /cumplimiento|titularidad/i.test(indicador)) return "pct";
+    return "auto";
+  }
 
   let barChart;
 
@@ -195,8 +328,16 @@
     el.innerHTML = "";
   }
 
-  // CSV parser
+  // --- CSV robusto: autodetecta delimitador , o ;
+  function detectDelimiter(text){
+    const firstLine = text.split(/\r?\n/).find(l => l.trim().length) || "";
+    const commas = (firstLine.match(/,/g) || []).length;
+    const semis  = (firstLine.match(/;/g) || []).length;
+    return semis > commas ? ";" : ",";
+  }
+
   function parseCSV(text){
+    const delim = detectDelimiter(text);
     const rows = [];
     let row = [];
     let cur = "";
@@ -206,22 +347,19 @@
       const c = text[i];
       const next = text[i+1];
 
-      if (c === '"' ){
-        if (inQuotes && next === '"'){ // escape ""
-          cur += '"'; i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
+      if (c === '"'){
+        if (inQuotes && next === '"'){ cur += '"'; i++; }
+        else inQuotes = !inQuotes;
         continue;
       }
 
-      if (!inQuotes && (c === ',')){
+      if (!inQuotes && c === delim){
         row.push(cur); cur = "";
         continue;
       }
 
-      if (!inQuotes && (c === '\n' || c === '\r')){
-        if (c === '\r' && next === '\n') i++; // CRLF
+      if (!inQuotes && (c === "\n" || c === "\r")){
+        if (c === "\r" && next === "\n") i++;
         row.push(cur);
         rows.push(row);
         row = [];
@@ -232,13 +370,11 @@
       cur += c;
     }
 
-    // último campo
     if (cur.length || row.length){
       row.push(cur);
       rows.push(row);
     }
 
-    // limpiar filas vacías
     return rows.filter(r => r.some(x => String(x).trim() !== ""));
   }
 
@@ -250,8 +386,7 @@
     let s = String(v).trim();
     if (!s) return null;
 
-    // % -> se conserva como 0-100
-    s = s.replace("%","").trim();
+    s = s.replace("%","").trim();    // % => 0-100
 
     // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
@@ -261,22 +396,76 @@
     return Number.isNaN(n) ? null : n;
   }
 
-  function isPercentLike(v){
-    return String(v ?? "").includes("%");
+  function isPercentLike(v){ return String(v ?? "").includes("%"); }
+
+  // Formateo consistente
+  function formatValue(indicador, raw){
+    const s = String(raw ?? "").trim();
+    if (!s) return "—";
+
+    const kind = inferKind(indicador, s);
+    const n = toNumber(s);
+
+    if (kind === "pct" || s.includes("%")){
+      if (n === null) return s.replace(/\s+/g,"");
+      return `${Math.round(n)}%`;
+    }
+    if (kind === "int"){
+      if (n === null) return s;
+      return String(Math.round(n));
+    }
+    if (kind === "ratio"){
+      if (n === null) return s;
+      return n.toFixed(2).replace(".", ",");
+    }
+
+    // auto
+    if (n === null) return s;
+    if (Number.isInteger(n)) return String(n);
+    return n.toFixed(2).replace(".", ",");
   }
 
-  function deltaBadge(day, acum){
-    if (day === null || acum === null) return { text: "s/d", cls: "pill warn" };
-    const d = day - acum;
-    const abs = Math.abs(d);
-    if (abs < 0.01) return { text: "OK", cls: "pill good" };
-    if (abs <= 2)   return { text: (d>0?"+":"") + d.toFixed(2), cls: "pill warn" };
-    return { text: (d>0?"+":"") + d.toFixed(2), cls: "pill bad" };
+  // Semáforo por KPI
+  function kpiStatus(indicador, value){
+    const r = RULES.find(x => x.match.test(indicador));
+    if (!r || value === null) return "warn";
+
+    if (r.type === "min"){
+      if (value >= r.green) return "good";
+      if (value >= r.yellow) return "warn";
+      return "bad";
+    } else { // max
+      if (value <= r.green) return "good";
+      if (value <= r.yellow) return "warn";
+      return "bad";
+    }
+  }
+
+  function statusClass(s){ return s === "good" ? "pill good" : s === "bad" ? "pill bad" : "pill warn"; }
+  function statusLabel(s){ return s === "good" ? "OK" : s === "bad" ? "Crítico" : "Atención"; }
+
+  function borderByStatus(s){
+    if (s === "good") return getComputedStyle(document.documentElement).getPropertyValue("--goodB");
+    if (s === "bad")  return getComputedStyle(document.documentElement).getPropertyValue("--badB");
+    return getComputedStyle(document.documentElement).getPropertyValue("--warnB");
+  }
+
+  // Ordenar KPIs según KPI_ORDER (los que no estén, van al final)
+  function sortItems(items){
+    const idx = new Map(KPI_ORDER.map((k,i) => [k.toLowerCase(), i]));
+    return items.slice().sort((a,b) => {
+      const ia = idx.has(a.indicador.toLowerCase()) ? idx.get(a.indicador.toLowerCase()) : 999;
+      const ib = idx.has(b.indicador.toLowerCase()) ? idx.get(b.indicador.toLowerCase()) : 999;
+      if (ia !== ib) return ia - ib;
+      return a.indicador.localeCompare(b.indicador, "es");
+    });
   }
 
   async function fetchItems(){
     setStatus("consultando…");
-    const res = await fetch(CSV_URL, { cache: "no-store" });
+
+    // Cache busting para que sea realmente "tiempo real"
+    const res = await fetch(`${CSV_URL}&_=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
 
     const csv = await res.text();
@@ -286,25 +475,29 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
-    // Detección flexible:
-    // - Indicador: columna que contenga "indic" o si no, la 1ra
-    // - Acumulado: columna que contenga "acum" (acum, acumulado, acum. ene, etc) o si no, la 3ra
-    // - Día: la columna restante (idealmente la 2da)
+    // Column mapping flexible:
     const idxIndic = headers.findIndex(h => lower(h).includes("indic"));
     const idxAcum  = headers.findIndex(h => lower(h).includes("acum"));
 
     let iIndic = idxIndic !== -1 ? idxIndic : 0;
-    let iAcum = idxAcum !== -1 ? idxAcum : (headers.length >= 3 ? 2 : 1);
-    let iDia;
+    let iAcum  = idxAcum  !== -1 ? idxAcum  : (headers.length >= 3 ? 2 : 1);
 
+    // Día: intenta encontrar fecha-like (14-ene, 2026-01-14, etc.)
     const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iAcum);
-    iDia = candidates.includes(1) ? 1 : (candidates[0] ?? 1);
+    const dateLike = candidates.find(i => {
+      const h = lower(headers[i]);
+      return /(\d{1,2}\s*[-/]\s*[a-záéíóú]{3,})|(^\d{4}[-/]\d{1,2}[-/]\d{1,2}$)/.test(h);
+    });
 
-    const dayLabel = headers[iDia] || "Día";
+    const iDia = dateLike ?? (candidates.includes(1) ? 1 : (candidates[0] ?? 1));
+
+    const dayLabel = headers[iDia]  || "Día";
     const acumLabel = headers[iAcum] || "Acum";
 
     document.getElementById("thDay").textContent = dayLabel;
     document.getElementById("thAcum").textContent = acumLabel;
+    document.getElementById("dayLabel").textContent = dayLabel;
+    document.getElementById("acumLabel").textContent = acumLabel;
 
     const items = dataRows
       .map(r => {
@@ -324,41 +517,45 @@
 
     if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
 
-    return items;
+    return sortItems(items);
   }
 
-  function renderKPIs(items){
-    const kpiGrid = document.getElementById("kpiGrid");
-    kpiGrid.innerHTML = "";
+  function renderKPIGrid(containerId, items, mode /* "day" | "acum" */){
+    const grid = document.getElementById(containerId);
+    grid.innerHTML = "";
 
-    items.slice(0, 8).forEach(it => {
-      const badge = deltaBadge(it.dia, it.acum);
-      const valText = it.diaRaw === "" ? "—" : (it.pct ? `${it.dia ?? "—"}%` : it.diaRaw);
-      const acumText = it.acumRaw === "" ? "—" : (it.pct ? `${it.acum ?? "—"}%` : it.acumRaw);
+    items.forEach(it => {
+      const raw = mode === "day" ? it.diaRaw : it.acumRaw;
+      const val = mode === "day" ? it.dia : it.acum;
+
+      const status = kpiStatus(it.indicador, val);
 
       const div = document.createElement("div");
       div.className = "kpi";
+      div.style.borderColor = borderByStatus(status);
+
       div.innerHTML = `
         <div class="name">${it.indicador}</div>
-        <div class="val">${valText}</div>
+        <div class="val">${formatValue(it.indicador, raw)}</div>
         <div class="sub">
-          <span class="muted">Acum: ${acumText}</span>
-          <span class="${badge.cls}">${badge.text}</span>
+          <span class="${statusClass(status)}">${statusLabel(status)}</span>
+          <span class="muted">${mode === "day" ? "Día" : "Mes"}</span>
         </div>
       `;
-      kpiGrid.appendChild(div);
+      grid.appendChild(div);
     });
   }
 
   function renderTable(items){
     const body = document.getElementById("detailBody");
     body.innerHTML = "";
+
     items.forEach(it => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${it.indicador}</td>
-        <td class="right">${it.diaRaw === "" ? "—" : it.diaRaw}</td>
-        <td class="right">${it.acumRaw === "" ? "—" : it.acumRaw}</td>
+        <td class="right">${formatValue(it.indicador, it.diaRaw)}</td>
+        <td class="right">${formatValue(it.indicador, it.acumRaw)}</td>
       `;
       body.appendChild(tr);
     });
@@ -366,6 +563,7 @@
 
   function renderChart(items){
     const slice = items.slice(0, 12);
+
     const labels = slice.map(x => x.indicador);
     const daySeries = slice.map(x => x.dia);
     const acumSeries = slice.map(x => x.acum);
@@ -386,7 +584,8 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: "#eaf1ff" } }
+          legend: { labels: { color: "#eaf1ff" } },
+          tooltip: { enabled: true }
         },
         scales: {
           x: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } },
@@ -400,18 +599,27 @@
     try{
       hideHelp();
       const items = await fetchItems();
-      renderKPIs(items);
+
+      // Layout Día / Mes (dos tarjetas)
+      renderKPIGrid("kpiGridDay", items, "day");
+      renderKPIGrid("kpiGridAcum", items, "acum");
+
+      // Detalle + chart
       renderTable(items);
       renderChart(items);
+
       setStatus("ok");
       setLastUpdate(new Date());
     }catch(err){
       console.error(err);
       setStatus("error: " + err.message);
-
-      const isFile = location.protocol === "file:";
       showHelp(`
-        ${isFile ? `<div style="margin-top:10px;">Detecté que estás en <code>file:///</code>. Eso suele bloquear <code>fetch()</code>.</div>` : ``}
+        <div><strong>Error de lectura</strong></div>
+        <div style="margin-top:6px;">${err.message}</div>
+        <div style="margin-top:10px;">
+          <div>1) Verificá que tu publicación abra sin login.</div>
+          <div>2) Si el sheet tiene otra pestaña, probá cambiar <code>GID</code> (0,1,2...).</div>
+        </div>
       `);
     }
   }
@@ -427,12 +635,14 @@
   document.getElementById("btnNow").addEventListener("click", () => refresh());
   document.getElementById("refreshSec").addEventListener("change", () => startTimer());
 
+  // Pausar cuando la pestaña no está visible (TV / performance)
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { if (timer) clearInterval(timer); }
+    else { refresh(); startTimer(); }
+  });
+
   refresh();
   startTimer();
 </script>
 </body>
 </html>
-
-
-
-
