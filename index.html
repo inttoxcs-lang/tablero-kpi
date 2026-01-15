@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Transporte San José S.A(Tráfico)</title>
+  <title>Tablero KPI - Transporte San José S.A (Tráfico)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
@@ -173,7 +173,7 @@
 
   const GID = 0;
 
-  // Endpoint CSV de sheets publicados (estable)
+  // Endpoint CSV
   const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
 
   // ============================================================================
@@ -195,7 +195,7 @@
     el.innerHTML = "";
   }
 
-  // CSV parser (soporta comillas, comas, saltos)
+  // CSV parser
   function parseCSV(text){
     const rows = [];
     let row = [];
@@ -297,7 +297,6 @@
     let iAcum = idxAcum !== -1 ? idxAcum : (headers.length >= 3 ? 2 : 1);
     let iDia;
 
-    // Elegir iDia como "la columna que no sea indic ni acum", priorizando la 2da
     const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iAcum);
     iDia = candidates.includes(1) ? 1 : (candidates[0] ?? 1);
 
@@ -410,7 +409,6 @@
       console.error(err);
       setStatus("error: " + err.message);
 
-      // Ayuda práctica para los dos problemas más típicos
       const isFile = location.protocol === "file:";
       showHelp(`
         ${isFile ? `<div style="margin-top:10px;">Detecté que estás en <code>file:///</code>. Eso suele bloquear <code>fetch()</code>.</div>` : ``}
@@ -434,6 +432,7 @@
 </script>
 </body>
 </html>
+
 
 
 
