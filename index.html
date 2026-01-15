@@ -169,12 +169,8 @@
 
 <script>
   // ============================================================================
-  // CONFIG (TU PUBLICACIÓN)
-  // ============================================================================
   const PUBLISHED_KEY = "2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
 
-  // Si tu pestaña publicada NO es la primera, este gid puede ser distinto.
-  // Probá 0, luego 1, 2, etc.
   const GID = 0;
 
   // Endpoint CSV de sheets publicados (estable)
@@ -417,17 +413,6 @@
       // Ayuda práctica para los dos problemas más típicos
       const isFile = location.protocol === "file:";
       showHelp(`
-        <div><strong>Checklist rápido</strong></div>
-        <ol style="margin:8px 0 0 18px;padding:0;">
-          <li>Si abriste el archivo como <code>file:///</code>, servilo por HTTP (recomendado). Ejemplos:</li>
-        </ol>
-        <div style="margin-left:18px;">
-          <div>• VSCode → extensión “Live Server”</div>
-          <div>• o en una carpeta: <code>python -m http.server 8000</code> y abrís <code>http://localhost:8000</code></div>
-        </div>
-        <div style="margin-top:10px;">
-          <div>2) Si sigue sin traer datos, probá cambiar <code>GID</code> (0, 1, 2…). Tu publicación muestra “Hoja 1”, pero el gid puede variar.</div>
-        </div>
         ${isFile ? `<div style="margin-top:10px;">Detecté que estás en <code>file:///</code>. Eso suele bloquear <code>fetch()</code>.</div>` : ``}
       `);
     }
@@ -449,5 +434,6 @@
 </script>
 </body>
 </html>
+
 
 
