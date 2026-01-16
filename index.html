@@ -3,80 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Transporte San José S.A</title>
+  <title>Tablero KPI - Transporte San José S.A (Tráfico)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
+      --bg:#0b1220;
       --muted:#8fa3c0;
-      --text:#ffffff;
-      --border:rgba(255,255,255,.25);
+      --text:#eaf1ff;
+      --border:rgba(255,255,255,.08);
 
       --good:#29d391;
       --warn:#ffd166;
       --bad:#ff5c7a;
 
-      --goodB:rgba(41,211,145,.8);
-      --warnB:rgba(255,209,102,.8);
-      --badB: rgba(255,92,122,.8);
+      --goodB:rgba(41,211,145,.45);
+      --warnB:rgba(255,209,102,.35);
+      --badB: rgba(255,92,122,.45);
     }
-
     *{ box-sizing:border-box; }
-    html, body{ height:100%; }
-
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 800px at 20% 0%, #132043 0%, var(--bg) 55%);
       color:var(--text);
-      background:#000;
-      position:relative;
-      overflow-x:hidden;
     }
-
-    /* 🇦🇷 BANDERA ARGENTINA COMPLETA – SIN OPACIDAD */
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      z-index:-2;
-      background-image:url("https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/1920px-Flag_of_Argentina.svg.png");
-      background-repeat:no-repeat;
-      background-position:center center;
-      background-size:contain;   /* bandera completa */
-      background-color:#000;     /* márgenes */
-      opacity:1;
-      filter:none;
-      pointer-events:none;
-    }
-
-    /* Header */
     header{
       padding:18px 22px;
       display:flex;
-      justify-content:space-between;
       align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
       border-bottom:1px solid var(--border);
-      background:rgba(0,0,0,.35);
-      backdrop-filter: blur(4px);
-      position:sticky;
-      top:0;
+      backdrop-filter: blur(8px);
+      position:sticky; top:0;
+      background: rgba(11,18,32,.55);
       z-index:10;
     }
-
     h1{ margin:0; font-size:18px; }
-
     .meta{
+      color:var(--muted);
       font-size:12px;
       display:flex;
       gap:16px;
+      align-items:center;
     }
 
-    .wrap{
-      padding:18px 22px 28px;
-      max-width:1200px;
-      margin:0 auto;
-    }
+    .wrap{ padding:18px 22px 28px; max-width:1200px; margin:0 auto; }
 
     .grid2{
       display:grid;
@@ -86,63 +60,73 @@
     @media (max-width:960px){ .grid2{ grid-template-columns:1fr; } }
 
     .card{
-      background:rgba(0,0,0,.30);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
-      box-shadow:0 10px 28px rgba(0,0,0,.6);
-      backdrop-filter: blur(4px);
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
     }
-
     .card h2{
       margin:0 0 10px;
       font-size:14px;
-      color:#fff;
+      color:#cfe0ff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
     }
-
-    .subtitle{ font-size:12px; color:#fff; opacity:.85; }
+    .subtitle{
+      font-size:12px;
+      color:var(--muted);
+    }
 
     .kpi-grid{
       display:grid;
       gap:10px;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      align-items:stretch;
     }
     @media (max-width:960px){ .kpi-grid{ grid-template-columns:repeat(2,1fr); } }
 
     .kpi{
       padding:12px;
       border-radius:12px;
-      background:rgba(0,0,0,.35);
-      border:2px solid var(--border);
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
       display:flex;
       flex-direction:column;
-      min-height:130px;
+      min-height:136px;
     }
-
     .kpi .name{
       font-size:12px;
-      color:#fff;
-      margin-bottom:8px;
-      opacity:.9;
+      color:var(--muted);
+      min-height:2.4em;
+      line-height:1.2;
+      margin-bottom:10px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
-
     .kpi .val{
-      font-size:26px;
-      font-weight:900;
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
     }
-
     .kpi .sub{
       margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
       font-size:12px;
+      color:var(--muted);
     }
 
     .pill{
       padding:2px 8px;
       border-radius:999px;
-      font-weight:900;
+      font-weight:800;
       border:1px solid var(--border);
     }
-
     .pill.good{ color:var(--good); }
     .pill.warn{ color:var(--warn); }
     .pill.bad{ color:var(--bad); }
@@ -161,86 +145,25 @@
       width:100%;
       border-collapse:collapse;
       font-size:12px;
+      border-radius:12px;
+      overflow:hidden;
       border:1px solid var(--border);
-      background:rgba(0,0,0,.35);
     }
-
     th,td{
       padding:10px;
       border-bottom:1px solid var(--border);
     }
-
-    th{ background:rgba(0,0,0,.6); }
-
+    th{
+      background:rgba(255,255,255,.03);
+      color:#cfe0ff;
+      text-align:left;
+    }
     td.right{ text-align:right; }
-
-    /* 🎬 GIF + TEXTO (ARRIBA DE TODO) */
-    #gifCenter{
-      position:fixed;
-      inset:0;
-      display:none;               /* se activa con KPI crítico */
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-      pointer-events:none;
-    }
-
-    .gifWrapper{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:14px;
-    }
-
-    .gifTitle{
-      font-size:28px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:1px;
-      color:#fff;
-      text-align:center;
-      padding:10px 18px;
-      background:rgba(0,0,0,.85);
-      border-radius:14px;
-      box-shadow:0 12px 36px rgba(0,0,0,.9);
-    }
-
-    #gifCenter img{
-      max-width:420px;
-      width:35vw;
-      min-width:220px;
-      border-radius:14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.9);
-    }
-
-    /* 🎵 Botón música */
-    #musicBtn{
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      z-index:10000;
-      background:rgba(0,0,0,.75);
-      color:#fff;
-      border:2px solid #fff;
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:14px;
-      cursor:pointer;
-    }
-
-    #ytHost{
-      position:fixed;
-      left:-9999px;
-      top:-9999px;
-      width:1px;
-      height:1px;
-      overflow:hidden;
-    }
+    tr:last-child td{ border-bottom:none; }
   </style>
 </head>
 
 <body>
-
 <header>
   <h1>Tablero KPI - Transporte San José S.A</h1>
   <div class="meta">
@@ -250,13 +173,16 @@
 </header>
 
 <div class="wrap">
+
+  <!-- KPIs Día / Mes -->
   <div class="grid2">
     <div class="card">
-      <h2>KPIs del Día</h2>
+      <h2>KPIs del Día <span class="subtitle">Día</span></h2>
       <div id="kpiDay" class="kpi-grid"></div>
     </div>
+
     <div class="card">
-      <h2>KPIs Acumulado Mes</h2>
+      <h2>KPIs Acumulado Mes <span class="subtitle">Mes</span></h2>
       <div id="kpiMonth" class="kpi-grid"></div>
     </div>
   </div>
@@ -281,26 +207,12 @@
       </table>
     </div>
   </div>
-</div>
 
-<!-- 🎬 GIF + TEXTO -->
-<div id="gifCenter">
-  <div class="gifWrapper">
-    <div class="gifTitle">LLEGÓ EL PEDIDO DE JOSEPHHHH SAPEEEEEH</div>
-    <img src="https://previews.123rf.com/images/vasilin01/vasilin012101/vasilin01210100045/161796890-rubber-dildos-stand-upright-on-the-table-products-for-sex-shop.jpg" alt="Maradona">
-  </div>
 </div>
-
-<!-- 🎵 Música -->
-<button id="musicBtn">▶ Música</button>
-<div id="ytHost"><div id="ytPlayer"></div></div>
-<script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
 const PUBLISHED_KEY="2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
 const CSV_URL=`https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=0`;
-
-const YT_VIDEO_ID="eVTXPUF4Oz4";
 
 const RULES=[
  {match:/cumplimiento/i,type:"min",green:98,yellow:95},
@@ -310,68 +222,74 @@ const RULES=[
 ];
 
 let barChart;
-let ytPlayer=null, ytPlaying=false;
-
-function onYouTubeIframeAPIReady(){
-  ytPlayer=new YT.Player("ytPlayer",{videoId:YT_VIDEO_ID});
-}
 
 function toNumber(v){
-  if(!v) return null;
-  let s=String(v).replace("%","").replace(/\./g,"").replace(",",".");
-  const n=Number(s);
-  return isNaN(n)?null:n;
+ if(!v)return null;
+ let s=String(v).replace("%","").replace(/\./g,"").replace(",",".");
+ let n=Number(s); return isNaN(n)?null:n;
 }
 
-function statusVal(ind,val){
-  const r=RULES.find(x=>x.match.test(ind));
-  if(!r||val==null) return "warn";
-  if(r.type==="min") return val>=r.green?"good":val>=r.yellow?"warn":"bad";
-  return val<=r.green?"good":val<=r.yellow?"warn":"bad";
+function format(v){
+ if(v===""||v==null)return"—";
+ if(String(v).includes("%"))return Math.round(toNumber(v))+"%";
+ let n=toNumber(v);
+ if(n===null)return v;
+ if(Number.isInteger(n))return n;
+ return n.toFixed(2).replace(".",",");
+}
+
+function status(ind,val){
+ let r=RULES.find(x=>x.match.test(ind));
+ if(!r||val===null)return"warn";
+ if(r.type==="min"){
+  if(val>=r.green)return"good";
+  if(val>=r.yellow)return"warn";
+  return"bad";
+ }else{
+  if(val<=r.green)return"good";
+  if(val<=r.yellow)return"warn";
+  return"bad";
+ }
 }
 
 async function refresh(){
-  const res=await fetch(CSV_URL+"&_="+Date.now());
-  const rows=(await res.text()).trim().split(/\r?\n/).map(r=>r.split(","));
+ const res=await fetch(CSV_URL+"&_="+Date.now());
+ const rows=(await res.text()).trim().split("\n").map(r=>r.split(","));
+ const data=rows.slice(1).map(r=>({
+  ind:r[0],
+  day:r[1],
+  mon:r[2],
+  d:toNumber(r[1]),
+  m:toNumber(r[2])
+ }));
 
-  const data=rows.slice(1).map(r=>({
-    ind:r[0],day:r[1],mon:r[2],d:toNumber(r[1]),m:toNumber(r[2])
-  })).filter(x=>x.ind);
+ document.getElementById("kpiDay").innerHTML="";
+ document.getElementById("kpiMonth").innerHTML="";
+ document.getElementById("detailBody").innerHTML="";
 
-  kpiDay.innerHTML=kpiMonth.innerHTML=detailBody.innerHTML="";
-
-  let anyCritical=false;
-
-  data.forEach(it=>{
-    ["Day","Month"].forEach(t=>{
-      const num=t==="Day"?it.d:it.m;
-      const st=statusVal(it.ind,num);
-      if(st==="bad") anyCritical=true;
-
-      const div=document.createElement("div");
-      div.className="kpi";
-      div.style.borderColor=`var(--${st}B)`;
-      div.innerHTML=`<div class="name">${it.ind}</div><div class="val">${t==="Day"?it.day:it.mon}</div>
-        <div class="sub"><span class="pill ${st}">${st==="good"?"OK":st==="bad"?"Crítico":"Atención"}</span></div>`;
-      document.getElementById(t==="Day"?"kpiDay":"kpiMonth").appendChild(div);
-    });
-
-    detailBody.innerHTML+=`<tr><td>${it.ind}</td><td class="right">${it.day}</td><td class="right">${it.mon}</td></tr>`;
+ data.forEach(it=>{
+  ["day","mon"].forEach((k,i)=>{
+   const s=status(it.ind,i?it.m:it.d);
+   const div=document.createElement("div");
+   div.className="kpi";
+   div.style.borderColor=s==="good"? "var(--goodB)":s==="bad"?"var(--badB)":"var(--warnB)";
+   div.innerHTML=`
+    <div class="name">${it.ind}</div>
+    <div class="val">${format(i?it.mon:it.day)}</div>
+    <div class="sub"><span class="pill ${s}">${s==="good"?"OK":s==="bad"?"Crítico":"Atención"}</span></div>`;
+   document.getElementById(i?"kpiMonth":"kpiDay").appendChild(div);
   });
 
-  document.getElementById("gifCenter").style.display=anyCritical?"flex":"none";
+  document.getElementById("detailBody").innerHTML+=`
+   <tr><td>${it.ind}</td><td class="right">${format(it.day)}</td><td class="right">${format(it.mon)}</td></tr>`;
+ });
+
+ document.getElementById("status").textContent="OK";
+ document.getElementById("lastUpdate").textContent=new Date().toLocaleString("es-AR");
 }
 
 refresh();
 setInterval(refresh,30000);
-
-document.getElementById("musicBtn").onclick=()=>{
-  if(!ytPlayer) return;
-  ytPlaying?ytPlayer.pauseVideo():ytPlayer.playVideo();
-  ytPlaying=!ytPlaying;
-  musicBtn.textContent=ytPlaying?"⏸ Música":"▶ Música";
-};
 </script>
-
 </body>
 </html>
