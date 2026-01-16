@@ -41,115 +41,84 @@
       background: rgba(11,18,32,.55);
       z-index:10;
     }
-    h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    h1{ margin:0; font-size:18px; }
     .meta{
       color:var(--muted);
       font-size:12px;
       display:flex;
       gap:16px;
-      flex-wrap:wrap;
       align-items:center;
-      justify-content:flex-end;
     }
-    .controls{ display:flex; gap:10px; align-items:center; }
-    .controls label{ font-size:12px; color:var(--muted); }
-    input[type="number"]{
-      width:110px;
-      background: rgba(255,255,255,.04);
-      border:1px solid var(--border);
-      color:var(--text);
-      border-radius:10px;
-      padding:8px 10px;
-      outline:none;
-    }
-    button{
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--border);
-      color:var(--text);
-      border-radius:10px;
-      padding:8px 10px;
-      cursor:pointer;
-      font-weight:650;
-    }
-    button:hover{ background: rgba(255,255,255,.09); }
 
     .wrap{ padding:18px 22px 28px; max-width:1200px; margin:0 auto; }
+
+    .grid2{
+      display:grid;
+      gap:14px;
+      grid-template-columns:1fr 1fr;
+    }
+    @media (max-width:960px){ .grid2{ grid-template-columns:1fr; } }
 
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
-      box-shadow: 0 10px 28px rgba(0,0,0,.25);
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
     }
     .card h2{
       margin:0 0 10px;
       font-size:14px;
       color:#cfe0ff;
-      font-weight:650;
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:10px;
+      align-items:center;
     }
     .subtitle{
       font-size:12px;
       color:var(--muted);
-      font-weight:600;
-      white-space:nowrap;
     }
 
     .kpi-grid{
       display:grid;
       gap:10px;
-      grid-template-columns: repeat(4, minmax(0,1fr));
+      grid-template-columns:repeat(4, minmax(0,1fr));
       align-items:stretch;
     }
-    @media (max-width: 960px){ .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width:960px){ .kpi-grid{ grid-template-columns:repeat(2,1fr); } }
 
-    /* KPI alignment fix */
     .kpi{
       padding:12px;
       border-radius:12px;
-      background: rgba(255,255,255,.03);
+      background:rgba(255,255,255,.03);
       border:1px solid var(--border);
-
       display:flex;
       flex-direction:column;
-      align-items:stretch;
       min-height:136px;
     }
     .kpi .name{
       font-size:12px;
       color:var(--muted);
-      margin-bottom:10px;
-
+      min-height:2.4em;
       line-height:1.2;
-      min-height:2.4em;             /* 2 líneas */
+      margin-bottom:10px;
       display:-webkit-box;
-      -webkit-box-orient:vertical;
       -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
       overflow:hidden;
     }
     .kpi .val{
       font-size:24px;
       font-weight:800;
-      letter-spacing:.2px;
       line-height:1;
-      margin-top:2px;
-    }
-    .val-empty{
-      opacity:.8;
-      letter-spacing:.4px;
     }
     .kpi .sub{
       margin-top:auto;
-      font-size:12px;
-      color:var(--muted);
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:8px;
+      font-size:12px;
+      color:var(--muted);
     }
 
     .pill{
@@ -157,59 +126,60 @@
       border-radius:999px;
       font-weight:800;
       border:1px solid var(--border);
-      white-space:nowrap;
     }
     .pill.good{ color:var(--good); }
     .pill.warn{ color:var(--warn); }
-    .pill.bad { color:var(--bad); }
+    .pill.bad{ color:var(--bad); }
 
     .row{
       display:grid;
       gap:14px;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns:1fr 1fr;
       margin-top:14px;
     }
-    @media (max-width: 960px){ .row{ grid-template-columns:1fr; } }
+    @media (max-width:960px){ .row{ grid-template-columns:1fr; } }
 
-    canvas{ width:100% !important; height:320px !important; }
+    canvas{ width:100%!important; height:320px!important; }
 
     table{
       width:100%;
       border-collapse:collapse;
       font-size:12px;
+      border-radius:12px;
       overflow:hidden;
-      border-radius:12px;
       border:1px solid var(--border);
     }
-    th, td{ padding:10px 10px; border-bottom:1px solid var(--border); }
-    th{ text-align:left; color:#cfe0ff; background: rgba(255,255,255,.03); }
-    td{ color:#eaf1ff; }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+    }
+    th{
+      background:rgba(255,255,255,.03);
+      color:#cfe0ff;
+      text-align:left;
+    }
+    td.right{ text-align:right; }
     tr:last-child td{ border-bottom:none; }
-    .right{ text-align:right; }
 
-    .alert{
-      margin-top:10px;
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background: rgba(255,255,255,.03);
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.35;
+    /* ===========================
+       GIF CENTRADO (OVERLAY)
+       =========================== */
+    #gifCenter{
+      position: fixed;
+      inset: 0;
+      display: none;               /* default oculto */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;        /* no bloquea clicks */
     }
-    code{ color:#cfe0ff; }
-
-    .legend{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      margin-top:10px;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .dot{
-      display:inline-block; width:10px; height:10px; border-radius:50%;
-      margin-right:6px;
-      border:1px solid var(--border);
-      vertical-align:middle;
+    #gifCenter img{
+      max-width: 420px;
+      width: 35vw;
+      min-width: 220px;
+      opacity: 0.9;
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
     }
   </style>
 </head>
@@ -218,457 +188,223 @@
 <header>
   <h1>Tablero KPI - Transporte San José S.A</h1>
   <div class="meta">
-    <div>Estado: <span id="status" class="muted">iniciando…</span></div>
-    <div>Última actualización: <span id="lastUpdate" class="muted">—</span></div>
-    <div class="controls">
-      <label>Refresh (s)</label>
-      <input id="refreshSec" type="number" min="5" step="5" value="30" />
-      <button id="btnNow">Actualizar</button>
-    </div>
+    <div>Estado: <span id="status">—</span></div>
+    <div>Actualizado: <span id="lastUpdate">—</span></div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- Único tablero KPI: Día/Mes se muestran en el título y se actualizan solos -->
-  <div class="card">
-    <h2>
-      <span>KPIs</span>
-      <span id="titleDate" class="subtitle"></span>
-    </h2>
+  <!-- KPIs Día / Mes -->
+  <div class="grid2">
+    <div class="card">
+      <h2>KPIs del Día <span class="subtitle">Día</span></h2>
+      <div id="kpiDay" class="kpi-grid"></div>
+    </div>
 
-    <div id="kpiGrid" class="kpi-grid"></div>
-
-    <div class="legend">
-      <span><span class="dot" style="background:var(--good);"></span>OK</span>
-      <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
-      <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
+    <div class="card">
+      <h2>KPIs Acumulado Mes <span class="subtitle">Mes</span></h2>
+      <div id="kpiMonth" class="kpi-grid"></div>
     </div>
   </div>
 
   <div class="row">
     <div class="card">
-      <h2>Comparativo Día vs Acumulado</h2>
+      <h2>Comparativo Día vs Mes</h2>
       <canvas id="barChart"></canvas>
     </div>
 
     <div class="card">
-      <h2>Detalle (formateado)</h2>
+      <h2>Detalle</h2>
       <table>
         <thead>
           <tr>
             <th>Indicador</th>
-            <th id="thDay" class="right">Día</th>
-            <th id="thAcum" class="right">Acum</th>
+            <th class="right">Día</th>
+            <th class="right">Mes</th>
           </tr>
         </thead>
         <tbody id="detailBody"></tbody>
       </table>
-
-      <div id="help" class="alert" style="display:none;"></div>
-      <div class="muted" style="margin-top:10px;font-size:12px;">
-        Se reconsulta en cada refresh.
-      </div>
     </div>
   </div>
 
 </div>
 
+<!-- GIF central (poner 200.gif en la misma carpeta que este HTML) -->
+<div id="gifCenter">
+  <img src="200.gif" alt="GIF centrado">
+</div>
+
 <script>
-  // ============================================================================
-  // TU PUBLICACIÓN
-  // ============================================================================
-  const PUBLISHED_KEY =
-    "2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
+const PUBLISHED_KEY="2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
+const CSV_URL=`https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=0`;
 
-  // Si la pestaña publicada no es la primera, cambiar: 0, 1, 2...
-  const GID = 0;
+const RULES=[
+ {match:/cumplimiento/i,type:"min",green:98,yellow:95},
+ {match:/titularidad/i,type:"min",green:95,yellow:92},
+ {match:/siniestros|reclamos/i,type:"max",green:0,yellow:1},
+ {match:/ipk/i,type:"min",green:0.6,yellow:0.55}
+];
 
-  const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
-  // ============================================================================
+let barChart;
 
-  // Orden deseado (opcional)
-  const KPI_ORDER = [
-    "Cumplimiento plan de servicio",
-    "Cumplimiento plan de kms",
-    "Comparación kms ejecutados vs WARA",
-    "Titularidad",
-    "Cumplimiento plan Hs Extras Conducción",
-    "Siniestros",
-    "Reclamos de clientes",
-    "IPK"
-  ];
+function toNumber(v){
+  if(v===undefined || v===null) return null;
+  let s=String(v).trim();
+  if(!s) return null;
 
-  // Reglas de semáforo (ajustables)
-  const RULES = [
-    { match: /cumplimiento/i, type: "min", green: 98,  yellow: 95  }, // %
-    { match: /titularidad/i,  type: "min", green: 95,  yellow: 92  }, // %
-    { match: /siniestros/i,   type: "max", green: 0,   yellow: 1   }, // conteo
-    { match: /reclamos/i,     type: "max", green: 0,   yellow: 1   }, // conteo
-    { match: /ipk/i,          type: "min", green: 0.60, yellow: 0.55 } // ratio
-  ];
-
-  function inferKind(indicador, raw){
-    const s = String(raw ?? "").trim();
-    if (/ipk/i.test(indicador)) return "ratio";
-    if (/siniestros|reclamos/i.test(indicador)) return "int";
-    if (s.includes("%") || /cumplimiento|titularidad/i.test(indicador)) return "pct";
-    return "auto";
+  // Si viene con %
+  if(s.includes("%")){
+    s=s.replace("%","").trim();
   }
 
-  let barChart;
+  // Normalización:
+  // - Si viene "0,65" -> "0.65"
+  // - Si viene "2.875.000,00" -> quitamos puntos de miles y reemplazamos coma por punto
+  s = s.replace(/\./g,"").replace(",",".");
+  const n=Number(s);
+  return Number.isNaN(n)?null:n;
+}
 
-  function setStatus(txt){ document.getElementById("status").textContent = txt; }
-  function setLastUpdate(d){
-    document.getElementById("lastUpdate").textContent = d ? d.toLocaleString("es-AR") : "—";
-  }
-  function showHelp(html){
-    const el = document.getElementById("help");
-    el.style.display = "block";
-    el.innerHTML = html;
-  }
-  function hideHelp(){
-    const el = document.getElementById("help");
-    el.style.display = "none";
-    el.innerHTML = "";
-  }
-
-  // ===== TÍTULO Día/Mes auto-actualizado =====
-  function formatDay(now){
-    const d = now.toLocaleDateString("es-AR", { day: "2-digit" });
-    let m = now.toLocaleDateString("es-AR", { month: "short" });
-    m = m.replace(".", "");
-    return `${d}-${m}`;
-  }
-  function formatMonth(now){
-    const m = now.toLocaleDateString("es-AR", { month: "long" });
-    const y = now.toLocaleDateString("es-AR", { year: "numeric" });
-    return `${m} ${y}`;
-  }
-  function updateTitleDate(){
-    const now = new Date();
-    const el = document.getElementById("titleDate");
-    if (!el) return;
-    el.textContent = `Día: ${formatDay(now)} · Mes: ${formatMonth(now)}`;
-  }
-  function scheduleMidnightUpdate(){
-    const now = new Date();
-    const next = new Date(now);
-    next.setHours(24, 0, 5, 0); // 00:00:05
-    const ms = next.getTime() - now.getTime();
-    setTimeout(() => {
-      updateTitleDate();
-      scheduleMidnightUpdate();
-    }, ms);
-  }
-  // ==========================================
-
-  // CSV robusto: autodetecta delimitador
-  function detectDelimiter(text){
-    const firstLine = text.split(/\r?\n/).find(l => l.trim().length) || "";
-    const commas = (firstLine.match(/,/g) || []).length;
-    const semis  = (firstLine.match(/;/g) || []).length;
-    return semis > commas ? ";" : ",";
-  }
-
-  function parseCSV(text){
-    const delim = detectDelimiter(text);
-    const rows = [];
-    let row = [];
-    let cur = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++){
-      const c = text[i];
-      const next = text[i+1];
-
-      if (c === '"'){
-        if (inQuotes && next === '"'){ cur += '"'; i++; }
-        else inQuotes = !inQuotes;
-        continue;
-      }
-
-      if (!inQuotes && c === delim){
-        row.push(cur); cur = "";
-        continue;
-      }
-
-      if (!inQuotes && (c === "\n" || c === "\r")){
-        if (c === "\r" && next === "\n") i++;
-        row.push(cur);
-        rows.push(row);
-        row = [];
-        cur = "";
-        continue;
-      }
-
-      cur += c;
-    }
-
-    if (cur.length || row.length){
-      row.push(cur);
-      rows.push(row);
-    }
-
-    return rows.filter(r => r.some(x => String(x).trim() !== ""));
-  }
-
-  function norm(s){ return String(s ?? "").trim(); }
-  function lower(s){ return norm(s).toLowerCase(); }
-
-  function toNumber(v){
-    if (v === null || v === undefined) return null;
-    let s = String(v).trim();
-    if (!s) return null;
-
-    s = s.replace("%","").trim();
-    s = s.replace(/\./g, "");
-    s = s.replace(",", ".");
-
-    const n = Number(s);
-    return Number.isNaN(n) ? null : n;
-  }
-
-  function isPercentLike(v){ return String(v ?? "").includes("%"); }
-
-  function formatValue(indicador, raw){
-    const s = String(raw ?? "").trim();
-    if (!s) return "—";
-
-    const kind = inferKind(indicador, s);
+function format(v){
+  if(v===""||v==null) return "—";
+  const s = String(v).trim();
+  if(!s) return "—";
+  if(s.includes("%")){
     const n = toNumber(s);
-
-    if (kind === "pct" || s.includes("%")){
-      if (n === null) return s.replace(/\s+/g,"");
-      return `${Math.round(n)}%`;
-    }
-    if (kind === "int"){
-      if (n === null) return s;
-      return String(Math.round(n));
-    }
-    if (kind === "ratio"){
-      if (n === null) return s;
-      return n.toFixed(2).replace(".", ",");
-    }
-
-    if (n === null) return s;
-    if (Number.isInteger(n)) return String(n);
-    return n.toFixed(2).replace(".", ",");
+    return (n===null) ? s : (Math.round(n) + "%");
   }
+  const n=toNumber(s);
+  if(n===null) return s;
+  if(Number.isInteger(n)) return String(n);
+  return n.toFixed(2).replace(".",",");
+}
 
-  function kpiStatus(indicador, value){
-    const r = RULES.find(x => x.match.test(indicador));
-    if (!r || value === null) return "warn";
-
-    if (r.type === "min"){
-      if (value >= r.green) return "good";
-      if (value >= r.yellow) return "warn";
-      return "bad";
-    } else {
-      if (value <= r.green) return "good";
-      if (value <= r.yellow) return "warn";
-      return "bad";
-    }
+function status(ind,val){
+  let r=RULES.find(x=>x.match.test(ind));
+  if(!r || val===null) return "warn";
+  if(r.type==="min"){
+    if(val>=r.green) return "good";
+    if(val>=r.yellow) return "warn";
+    return "bad";
+  }else{
+    if(val<=r.green) return "good";
+    if(val<=r.yellow) return "warn";
+    return "bad";
   }
+}
 
-  function statusClass(s){ return s === "good" ? "pill good" : s === "bad" ? "pill bad" : "pill warn"; }
-  function statusLabel(s){ return s === "good" ? "OK" : s === "bad" ? "Crítico" : "Atención"; }
-
-  function borderByStatus(s){
-    const root = getComputedStyle(document.documentElement);
-    if (s === "good") return root.getPropertyValue("--goodB");
-    if (s === "bad")  return root.getPropertyValue("--badB");
-    return root.getPropertyValue("--warnB");
+function ensureChart(labels, dayData, monData){
+  const ctx = document.getElementById("barChart");
+  if(barChart){
+    barChart.data.labels = labels;
+    barChart.data.datasets[0].data = dayData;
+    barChart.data.datasets[1].data = monData;
+    barChart.update();
+    return;
   }
-
-  function sortItems(items){
-    const idx = new Map(KPI_ORDER.map((k,i) => [k.toLowerCase(), i]));
-    return items.slice().sort((a,b) => {
-      const ia = idx.has(a.indicador.toLowerCase()) ? idx.get(a.indicador.toLowerCase()) : 999;
-      const ib = idx.has(b.indicador.toLowerCase()) ? idx.get(b.indicador.toLowerCase()) : 999;
-      if (ia !== ib) return ia - ib;
-      return a.indicador.localeCompare(b.indicador, "es");
-    });
-  }
-
-  async function fetchItems(){
-    setStatus("consultando…");
-
-    // Cache busting para "tiempo real"
-    const res = await fetch(`${CSV_URL}&_=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
-
-    const csv = await res.text();
-    const table = parseCSV(csv);
-    if (table.length < 2) throw new Error("El CSV no trae datos (hoja vacía o rango publicado sin contenido).");
-
-    const headers = table[0].map(norm);
-    const dataRows = table.slice(1);
-
-    const idxIndic = headers.findIndex(h => lower(h).includes("indic"));
-    const idxAcum  = headers.findIndex(h => lower(h).includes("acum"));
-
-    let iIndic = idxIndic !== -1 ? idxIndic : 0;
-    let iAcum  = idxAcum  !== -1 ? idxAcum  : (headers.length >= 3 ? 2 : 1);
-
-    const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iAcum);
-    const dateLike = candidates.find(i => {
-      const h = lower(headers[i]);
-      return /(\d{1,2}\s*[-/]\s*[a-záéíóú]{3,})|(^\d{4}[-/]\d{1,2}[-/]\d{1,2}$)/.test(h);
-    });
-    const iDia = dateLike ?? (candidates.includes(1) ? 1 : (candidates[0] ?? 1));
-
-    const dayLabel = headers[iDia]  || "Día";
-    const acumLabel = headers[iAcum] || "Acum";
-
-    document.getElementById("thDay").textContent = dayLabel;
-    document.getElementById("thAcum").textContent = acumLabel;
-
-    const items = dataRows
-      .map(r => {
-        const indicador = norm(r[iIndic]);
-        const diaRaw = norm(r[iDia]);
-        const acumRaw = norm(r[iAcum]);
-        return {
-          indicador,
-          diaRaw,
-          acumRaw,
-          dia: toNumber(diaRaw),
-          acum: toNumber(acumRaw),
-          pct: isPercentLike(diaRaw) || isPercentLike(acumRaw)
-        };
-      })
-      .filter(x => x.indicador);
-
-    if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
-
-    return sortItems(items);
-  }
-
-  function renderKPIGrid(containerId, items){
-    const grid = document.getElementById(containerId);
-    grid.innerHTML = "";
-
-    items.forEach(it => {
-      const status = kpiStatus(it.indicador, it.dia);
-
-      const formatted = formatValue(it.indicador, it.diaRaw);
-      const isEmpty = formatted === "—";
-
-      const div = document.createElement("div");
-      div.className = "kpi";
-      div.style.borderColor = borderByStatus(status);
-
-      div.innerHTML = `
-        <div class="name">${it.indicador}</div>
-        <div class="val ${isEmpty ? "val-empty" : ""}">${formatted}</div>
-        <div class="sub">
-          <span class="${statusClass(status)}">${statusLabel(status)}</span>
-          <span class="muted">Día</span>
-        </div>
-      `;
-      grid.appendChild(div);
-    });
-  }
-
-  function renderTable(items){
-    const body = document.getElementById("detailBody");
-    body.innerHTML = "";
-
-    items.forEach(it => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.indicador}</td>
-        <td class="right">${formatValue(it.indicador, it.diaRaw)}</td>
-        <td class="right">${formatValue(it.indicador, it.acumRaw)}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  function renderChart(items){
-    const slice = items.slice(0, 12);
-
-    const labels = slice.map(x => x.indicador);
-    const daySeries = slice.map(x => x.dia);
-    const acumSeries = slice.map(x => x.acum);
-
-    const ctx = document.getElementById("barChart");
-    if (barChart) barChart.destroy();
-
-    barChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          { label: document.getElementById("thDay").textContent, data: daySeries },
-          { label: document.getElementById("thAcum").textContent, data: acumSeries }
-        ]
+  barChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Día", data: dayData },
+        { label: "Mes", data: monData }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: "#cfe0ff" } }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: "#eaf1ff" } },
-          tooltip: { enabled: true }
-        },
-        scales: {
-          x: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } },
-          y: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } }
-        }
+      scales: {
+        x: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } },
+        y: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } }
       }
-    });
-  }
-
-  async function refresh(){
-    try{
-      hideHelp();
-      updateTitleDate(); // Día/Mes del sistema (auto)
-
-      const items = await fetchItems();
-
-      renderKPIGrid("kpiGrid", items);
-      renderTable(items);
-      renderChart(items);
-
-      setStatus("ok");
-      setLastUpdate(new Date());
-    }catch(err){
-      console.error(err);
-      setStatus("error: " + err.message);
-      showHelp(`
-        <div><strong>Error de lectura</strong></div>
-        <div style="margin-top:6px;">${err.message}</div>
-        <div style="margin-top:10px;">
-          <div>1) Verificá que tu publicación abra sin login.</div>
-          <div>2) Si el sheet tiene otra pestaña, probá cambiar <code>GID</code> (0,1,2...).</div>
-        </div>
-      `);
     }
-  }
-
-  let timer;
-  function startTimer(){
-    if (timer) clearInterval(timer);
-    const sec = Math.max(5, Number(document.getElementById("refreshSec").value) || 30);
-    timer = setInterval(refresh, sec * 1000);
-  }
-
-  document.getElementById("btnNow").addEventListener("click", () => refresh());
-  document.getElementById("refreshSec").addEventListener("change", () => startTimer());
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) { if (timer) clearInterval(timer); }
-    else { refresh(); startTimer(); }
   });
+}
 
-  // Inicialización
-  updateTitleDate();
-  setInterval(updateTitleDate, 60 * 1000); // se actualiza solo cada minuto
-  scheduleMidnightUpdate();                // refuerzo exacto al cambio de día
+async function refresh(){
+  try{
+    // Cache-busting
+    const res=await fetch(CSV_URL+"&_="+Date.now());
+    const csv = (await res.text()).trim();
+    const rows = csv.split("\n").map(r => r.split(","));
 
-  refresh();
-  startTimer();
+    // Espera columnas: Indicador, Dia, Mes
+    const data = rows.slice(1).map(r => ({
+      ind: r[0],
+      day: r[1],
+      mon: r[2],
+      d: toNumber(r[1]),
+      m: toNumber(r[2])
+    })).filter(x => x.ind && x.ind.trim().length);
+
+    document.getElementById("kpiDay").innerHTML="";
+    document.getElementById("kpiMonth").innerHTML="";
+    document.getElementById("detailBody").innerHTML="";
+
+    // Para estado global + GIF
+    let allGood = true;
+
+    data.forEach(it=>{
+      // Día
+      const sd = status(it.ind, it.d);
+      if(sd !== "good") allGood = false;
+
+      const divD=document.createElement("div");
+      divD.className="kpi";
+      divD.style.borderColor= sd==="good" ? "var(--goodB)" : sd==="bad" ? "var(--badB)" : "var(--warnB)";
+      divD.innerHTML=`
+        <div class="name">${it.ind}</div>
+        <div class="val">${format(it.day)}</div>
+        <div class="sub"><span class="pill ${sd}">${sd==="good"?"OK":sd==="bad"?"Crítico":"Atención"}</span></div>`;
+      document.getElementById("kpiDay").appendChild(divD);
+
+      // Mes
+      const sm = status(it.ind, it.m);
+      if(sm !== "good") allGood = false;
+
+      const divM=document.createElement("div");
+      divM.className="kpi";
+      divM.style.borderColor= sm==="good" ? "var(--goodB)" : sm==="bad" ? "var(--badB)" : "var(--warnB)";
+      divM.innerHTML=`
+        <div class="name">${it.ind}</div>
+        <div class="val">${format(it.mon)}</div>
+        <div class="sub"><span class="pill ${sm}">${sm==="good"?"OK":sm==="bad"?"Crítico":"Atención"}</span></div>`;
+      document.getElementById("kpiMonth").appendChild(divM);
+
+      // Tabla detalle
+      document.getElementById("detailBody").innerHTML +=
+        `<tr><td>${it.ind}</td><td class="right">${format(it.day)}</td><td class="right">${format(it.mon)}</td></tr>`;
+    });
+
+    // Chart
+    ensureChart(
+      data.map(x=>x.ind),
+      data.map(x=>(x.d ?? 0)),
+      data.map(x=>(x.m ?? 0))
+    );
+
+    // Estado + fecha
+    document.getElementById("status").textContent = allGood ? "OK" : "ATENCIÓN";
+    document.getElementById("lastUpdate").textContent = new Date().toLocaleString("es-AR");
+
+    // Mostrar GIF solo si todo está OK
+    const gif = document.getElementById("gifCenter");
+    gif.style.display = allGood ? "flex" : "none";
+
+  }catch(e){
+    document.getElementById("status").textContent="ERROR";
+    console.error(e);
+  }
+}
+
+refresh();
+setInterval(refresh,30000);
 </script>
 </body>
 </html>
