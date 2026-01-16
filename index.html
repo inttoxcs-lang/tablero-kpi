@@ -108,15 +108,18 @@
     .row{
       display:grid; gap:14px;
       grid-template-columns: 1fr 1fr;
-      margin-top: 0; /* sube el contenido principal */
+      margin-top: 0;
     }
     @media (max-width: 960px){
       .row{ grid-template-columns: 1fr; }
     }
 
-    .chart-block{ margin-top: 14px; } /* comparativo abajo */
+    /* Comparativo al final ocupando fila completa */
+    .full-row{
+      margin-top: 14px;
+    }
 
-    canvas{ width:100% !important; height: 320px !important; }
+    canvas{ width:100% !important; height: 360px !important; }
 
     table{
       width:100%;
@@ -168,9 +171,8 @@
 
 <div class="wrap">
 
-  <!-- PRIMERO: LAYOUT DÍA + MES -->
+  <!-- ARRIBA: DÍA + MES -->
   <div class="row">
-    <!-- KPIs Día -->
     <section class="card">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
@@ -189,7 +191,6 @@
       <div id="helpDay" class="alert" style="display:none;"></div>
     </section>
 
-    <!-- KPIs Mes -->
     <section class="card">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
@@ -209,15 +210,15 @@
     </section>
   </div>
 
-  <!-- DESPUÉS: COMPARATIVO ABAJO -->
-  <div class="card chart-block">
+  <!-- ABAJO: COMPARATIVO EN FILA COMPLETA -->
+  <section class="card full-row">
     <h2>Comparativo (Día vs Mes)</h2>
     <canvas id="chartCompare"></canvas>
     <div id="chartMsg" class="alert" style="display:none;margin-top:10px;"></div>
     <div class="muted" style="margin-top:10px;font-size:12px;">
       Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
     </div>
-  </div>
+  </section>
 
 </div>
 
@@ -259,7 +260,6 @@
     el.innerHTML = "";
   }
 
-  // CSV parser (soporta comillas, comas, saltos)
   function parseCSV(text){
     const rows = [];
     let row = [];
@@ -309,10 +309,7 @@
     let s = String(v).trim();
     if (!s) return null;
 
-    // % -> se conserva como 0-100
     s = s.replace("%","").trim();
-
-    // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
     s = s.replace(",", ".");
 
@@ -434,7 +431,6 @@
     for (const x of slice){
       const d = Number.isFinite(x.dia) ? x.dia : null;
       const m = Number.isFinite(x.mes) ? x.mes : null;
-
       if (d === null && m === null) continue;
 
       labels.push(x.indicador);
@@ -534,7 +530,6 @@
     }
   }
 
-  // Auto refresh
   let timer;
   function startTimer(){
     if (timer) clearInterval(timer);
