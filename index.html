@@ -3,67 +3,106 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día + Mes + comparativo)</title>
+  <title>Tablero KPI - Google Sheets</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg:#0b1220;
-      --muted:#8fa3c0;
+      /* Background (verde + acento magenta como la imagen) */
+      --bg-green-main: #0b7f2a;
+      --bg-green-dark: #064d1a;
+      --bg-green-bright: #0ea34a;
+      --bg-accent-pink: #ff5aa5;
+
+      /* UI */
       --text:#eaf1ff;
-      --border:rgba(255,255,255,.08);
-      --good:#29d391;
+      --muted: rgba(234,241,255,.72);
+      --border: rgba(255,255,255,.12);
+
+      /* Status */
+      --good:#2cff9a;
       --warn:#ffd166;
-      --bad:#ff5c7a;
-      --focus: rgba(207,224,255,.65);
+      --bad:#ff6b81;
+
+      --focus: rgba(234,241,255,.7);
     }
+
     *{ box-sizing:border-box; }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 20% 0%, #132043 0%, var(--bg) 55%);
       color: var(--text);
-      font-size: 14px;
+
+      /* Fondo verde con glow magenta superior (similar a tu referencia) */
+      background:
+        radial-gradient(
+          600px 300px at 50% 0%,
+          rgba(255,90,165,.55) 0%,
+          rgba(255,90,165,.15) 35%,
+          rgba(255,90,165,0) 60%
+        ),
+        linear-gradient(
+          180deg,
+          var(--bg-green-bright) 0%,
+          var(--bg-green-main) 45%,
+          var(--bg-green-dark) 100%
+        );
+      min-height: 100vh;
     }
 
     header{
       padding:18px 22px;
-      display:flex; align-items: baseline; justify-content: space-between; gap: 12px;
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
-      position: sticky; top: 0;
-      background: rgba(11,18,32,.55);
-      z-index: 10;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 12px;
+
+      position:sticky;
+      top:0;
+      z-index:10;
+
+      background: rgba(6,77,26,.55);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.18);
     }
+
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
 
     .meta{
-      color: var(--muted);
       font-size:12px;
-      display:flex; gap:16px; flex-wrap: wrap; align-items:center;
+      color: var(--muted);
+      display:flex;
+      gap:16px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .controls{ display:flex; gap:10px; align-items:center; }
-    .controls label{ font-size:12px; color: var(--muted); }
+
+    .controls{ display:flex; gap:8px; align-items:center; }
+    .controls label{ color: var(--muted); }
+
     input[type="number"]{
       width:110px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
       color: var(--text);
-      border-radius: 10px;
-      padding: 8px 10px;
       outline:none;
     }
+
     button{
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--border);
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
       color: var(--text);
-      border-radius: 10px;
-      padding: 8px 10px;
       cursor:pointer;
-      font-weight: 650;
+      font-weight:650;
     }
-    button:hover{ background: rgba(255,255,255,.09); }
+    button:hover{ background: rgba(0,0,0,.25); }
 
     button:focus-visible,
     input:focus-visible{
@@ -71,112 +110,151 @@
       outline-offset: 2px;
     }
 
-    .wrap{ padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px 22px 28px; }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    @media(max-width:900px){
+      .row{ grid-template-columns:1fr; }
+    }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.34));
+      border: 1px solid rgba(255,255,255,.14);
       border-radius: 14px;
-      padding: 14px;
-      box-shadow: 0 10px 28px rgba(0,0,0,.25);
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.30);
     }
-    .card h2{ margin:0 0 10px; font-size:14px; color:#cfe0ff; font-weight:650; }
+    .card h2{
+      margin:0 0 12px;
+      font-size:14px;
+      color: rgba(234,241,255,.92);
+      font-weight: 700;
+    }
 
     .kpi-grid{
-      display:grid; gap:10px;
+      display:grid;
       grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:10px;
       align-items: stretch;
     }
-    @media (max-width: 960px){
+    @media(max-width:900px){
       .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
-    /* KPI cards alineadas */
     .kpi{
-      padding:12px;
+      min-height: 140px;
+      padding: 12px;
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
 
       display:flex;
       flex-direction: column;
       justify-content: space-between;
+    }
 
-      min-height: 140px;
-    }
     .kpi .name{
-      font-size:12px;
+      font-size: 12px;
       color: var(--muted);
-      margin-bottom: 6px;
       min-height: 32px;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
+
     .kpi .val{
-      font-size:22px;
-      font-weight:750;
-      letter-spacing:.2px;
+      font-size: 22px;
+      font-weight: 750;
+      letter-spacing: .2px;
+      font-variant-numeric: tabular-nums;
     }
+
     .kpi .sub{
-      margin-top:10px;
-      font-size:12px;
-      color: var(--muted);
+      margin-top: 10px;
       display:flex;
-      justify-content: flex-end;
+      justify-content:flex-end;
       align-items:center;
     }
 
-    .pill{ padding:2px 8px; border-radius: 999px; font-weight:650; border: 1px solid var(--border); }
-    .pill.good{ color: var(--good); }
-    .pill.warn{ color: var(--warn); }
-    .pill.bad{ color: var(--bad); }
-
-    .row{
-      display:grid; gap:14px;
-      grid-template-columns: 1fr 1fr;
-      margin-top: 0;
+    .pill{
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      border: 1px solid rgba(255,255,255,.18);
+      font-variant-numeric: tabular-nums;
     }
-    @media (max-width: 960px){
-      .row{ grid-template-columns: 1fr; }
+    .pill.good{
+      color: var(--good);
+      background: rgba(44,255,154,.16);
+      border-color: rgba(44,255,154,.30);
     }
-
-    .full-row{ margin-top: 14px; }
-
-    canvas{ width:100% !important; height: 360px !important; }
+    .pill.warn{
+      color: var(--warn);
+      background: rgba(255,209,102,.16);
+      border-color: rgba(255,209,102,.30);
+    }
+    .pill.bad{
+      color: var(--bad);
+      background: rgba(255,107,129,.16);
+      border-color: rgba(255,107,129,.30);
+    }
 
     table{
       width:100%;
       border-collapse: collapse;
       font-size: 12px;
-      overflow:hidden;
+      margin-top: 12px;
       border-radius: 12px;
-      border: 1px solid var(--border);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.12);
     }
-    th, td{ padding:10px; border-bottom: 1px solid var(--border); }
-    th{ text-align:left; color:#cfe0ff; background: rgba(255,255,255,.03); }
-    td{ color: var(--text); }
-    tr:last-child td{ border-bottom:none; }
-    tr:hover td{ background: rgba(255,255,255,.02); }
+    th,td{
+      padding: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      font-variant-numeric: tabular-nums;
+    }
+    th{
+      text-align:left;
+      color: rgba(234,241,255,.92);
+      background: rgba(0,0,0,.20);
+    }
+    tbody tr:nth-child(odd) td{ background: rgba(0,0,0,.10); }
+    tbody tr:hover td{ background: rgba(255,255,255,.04); }
     .right{ text-align:right; }
+
+    .full-row{ margin-top: 14px; }
+
+    canvas{ width:100% !important; height: 420px !important; }
+
     .muted{ color: var(--muted); }
 
     .alert{
       margin-top:10px;
       padding:10px 12px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,.14);
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
+      background: rgba(0,0,0,.18);
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
       word-break: break-word;
     }
-    code{ color:#cfe0ff; }
+
+    code{ color: rgba(234,241,255,.92); }
   </style>
 </head>
 
 <body>
 <header>
-  <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;">
-    <h1>Tablero KPI - Transporte San José S.A (Tráfico PRA)</h1>
+  <div>
+    <h1>Tablero KPI – Transporte San José S.A (Tráfico PRA)</h1>
   </div>
 
   <div class="meta">
@@ -192,13 +270,13 @@
 
 <div class="wrap">
 
-  <!-- ARRIBA: DÍA + MES -->
   <div class="row">
+    <!-- Día -->
     <section class="card">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
 
-      <h2 style="margin-top:14px;">Detalle (Día)</h2>
+      <h2 style="margin-top:16px;">Detalle (Día)</h2>
       <table>
         <thead>
           <tr>
@@ -212,11 +290,12 @@
       <div id="helpDay" class="alert" style="display:none;"></div>
     </section>
 
+    <!-- Mes -->
     <section class="card">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
 
-      <h2 style="margin-top:14px;">Detalle (Mes)</h2>
+      <h2 style="margin-top:16px;">Detalle (Mes)</h2>
       <table>
         <thead>
           <tr>
@@ -231,7 +310,7 @@
     </section>
   </div>
 
-  <!-- ABAJO: COMPARATIVO EN FILA COMPLETA -->
+  <!-- Comparativo -->
   <section class="card full-row">
     <h2>Comparativo (Día vs Mes)</h2>
     <canvas id="chartCompare"></canvas>
@@ -346,11 +425,11 @@
     return String(v ?? "").includes("%");
   }
 
-  // Reglas acordadas para porcentajes:
-  // - >= 80%  -> OK (verde)
-  // - >= 40%  -> Atención (amarillo)
-  // - < 40%   -> Crítico (rojo)
-  // No porcentuales: "ver" (amarillo) por no tener umbrales definidos.
+  // Reglas para porcentajes:
+  // >= 80%  -> OK (verde)
+  // >= 40%  -> Atención (amarillo)
+  // < 40%   -> Crítico (rojo)
+  // No porcentuales -> "ver" (sin umbrales definidos)
   function badgeForValue(val, isPercent){
     if (val === null) return { text: "s/d", cls: "pill warn" };
 
@@ -428,7 +507,9 @@
       const pct = mode === "day" ? it.pctDia : it.pctMes;
 
       const badge = badgeForValue(val, pct);
-      const valText = raw === "" ? "—" : (pct ? `${val ?? "—"}%` : raw);
+
+      // Mostrar tal cual vino (mantiene coma, % etc.)
+      const valText = raw === "" ? "—" : raw;
 
       const div = document.createElement("div");
       div.className = "kpi";
@@ -501,7 +582,7 @@
         maintainAspectRatio: false,
         animation: false,
         plugins: {
-          legend: { labels: { color: "#eaf1ff" } },
+          legend: { labels: { color: "rgba(234,241,255,.92)" } },
           tooltip: {
             callbacks: {
               label: (c) => `${c.dataset.label}: ${c.raw === null ? "—" : c.raw}`
@@ -509,8 +590,8 @@
           }
         },
         scales: {
-          x: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } },
-          y: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } }
+          x: { ticks: { color: "rgba(234,241,255,.72)" }, grid: { color: "rgba(255,255,255,.10)" } },
+          y: { ticks: { color: "rgba(234,241,255,.72)" }, grid: { color: "rgba(255,255,255,.10)" } }
         }
       }
     });
@@ -541,8 +622,6 @@
       console.error(err);
       setStatus("error: " + err.message);
 
-      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://. Si estás en GitHub Pages y falla igual, verificá que la URL de Google Sheets devuelva CSV real.");
-
       const isFile = location.protocol === "file:";
       const helpHtml = `
         <div><strong>Checklist rápido</strong></div>
@@ -565,6 +644,7 @@
       `;
       showHelp("day", helpHtml);
       showHelp("mes", helpHtml);
+      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://.");
     }
   }
 
