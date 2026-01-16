@@ -75,13 +75,6 @@
 
     .wrap{ padding:18px 22px 28px; max-width:1200px; margin:0 auto; }
 
-    .grid2{
-      display:grid;
-      gap:14px;
-      grid-template-columns: 1fr 1fr;
-    }
-    @media (max-width: 960px){ .grid2{ grid-template-columns:1fr; } }
-
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border:1px solid var(--border);
@@ -103,62 +96,61 @@
       font-size:12px;
       color:var(--muted);
       font-weight:600;
+      white-space:nowrap;
     }
 
     .kpi-grid{
       display:grid;
       gap:10px;
       grid-template-columns: repeat(4, minmax(0,1fr));
-      align-items: stretch; /* NUEVO: fuerza estirado */
+      align-items:stretch;
     }
     @media (max-width: 960px){ .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
-    /* ===== KPI CARD ALIGN FIX ===== */
+    /* KPI alignment fix */
     .kpi{
       padding:12px;
       border-radius:12px;
       background: rgba(255,255,255,.03);
       border:1px solid var(--border);
 
-      display:flex;              /* NUEVO */
-      flex-direction:column;     /* NUEVO */
-      align-items:stretch;       /* NUEVO */
-      min-height:136px;          /* NUEVO: ajustable */
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      min-height:136px;
     }
     .kpi .name{
       font-size:12px;
       color:var(--muted);
       margin-bottom:10px;
 
-      line-height:1.2;           /* NUEVO */
-      min-height:2.4em;          /* NUEVO: 2 líneas aprox */
-      display:-webkit-box;       /* NUEVO */
-      -webkit-box-orient:vertical;/* NUEVO */
-      -webkit-line-clamp:2;      /* NUEVO: máx 2 líneas */
-      overflow:hidden;           /* NUEVO */
+      line-height:1.2;
+      min-height:2.4em;             /* 2 líneas */
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:2;
+      overflow:hidden;
     }
     .kpi .val{
       font-size:24px;
       font-weight:800;
       letter-spacing:.2px;
-
-      line-height:1;             /* NUEVO */
-      margin-top:2px;            /* NUEVO */
+      line-height:1;
+      margin-top:2px;
     }
-    .val-empty{                  /* NUEVO */
+    .val-empty{
       opacity:.8;
       letter-spacing:.4px;
     }
     .kpi .sub{
-      margin-top:auto;           /* NUEVO: footer abajo */
+      margin-top:auto;
       font-size:12px;
       color:var(--muted);
       display:flex;
       justify-content:space-between;
-      align-items:center;        /* NUEVO */
+      align-items:center;
       gap:8px;
     }
-    /* ============================ */
 
     .pill{
       padding:2px 8px;
@@ -238,32 +230,19 @@
 
 <div class="wrap">
 
-  <!-- Layout Día / Mes -->
-  <div class="grid2">
-    <div class="card">
-      <h2>
-        <span>KPIs del Día</span>
-        <span id="dayLabel" class="subtitle">Día</span>
-      </h2>
-      <div id="kpiGridDay" class="kpi-grid"></div>
-      <div class="legend">
-        <span><span class="dot" style="background:var(--good);"></span>OK</span>
-        <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
-        <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
-      </div>
-    </div>
+  <!-- Único tablero KPI: Día/Mes se muestran en el título y se actualizan solos -->
+  <div class="card">
+    <h2>
+      <span>KPIs</span>
+      <span id="titleDate" class="subtitle"></span>
+    </h2>
 
-    <div class="card">
-      <h2>
-        <span>KPIs Acumulado Mes</span>
-        <span id="acumLabel" class="subtitle">Acum</span>
-      </h2>
-      <div id="kpiGridAcum" class="kpi-grid"></div>
-      <div class="legend">
-        <span><span class="dot" style="background:var(--good);"></span>OK</span>
-        <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
-        <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
-      </div>
+    <div id="kpiGrid" class="kpi-grid"></div>
+
+    <div class="legend">
+      <span><span class="dot" style="background:var(--good);"></span>OK</span>
+      <span><span class="dot" style="background:var(--warn);"></span>Atención</span>
+      <span><span class="dot" style="background:var(--bad);"></span>Crítico</span>
     </div>
   </div>
 
@@ -326,7 +305,7 @@
     { match: /titularidad/i,  type: "min", green: 95,  yellow: 92  }, // %
     { match: /siniestros/i,   type: "max", green: 0,   yellow: 1   }, // conteo
     { match: /reclamos/i,     type: "max", green: 0,   yellow: 1   }, // conteo
-    { match: /ipk/i,          type: "min", green: 0.60, yellow: 0.55} // ratio
+    { match: /ipk/i,          type: "min", green: 0.60, yellow: 0.55 } // ratio
   ];
 
   function inferKind(indicador, raw){
@@ -353,6 +332,36 @@
     el.style.display = "none";
     el.innerHTML = "";
   }
+
+  // ===== TÍTULO Día/Mes auto-actualizado =====
+  function formatDay(now){
+    const d = now.toLocaleDateString("es-AR", { day: "2-digit" });
+    let m = now.toLocaleDateString("es-AR", { month: "short" });
+    m = m.replace(".", "");
+    return `${d}-${m}`;
+  }
+  function formatMonth(now){
+    const m = now.toLocaleDateString("es-AR", { month: "long" });
+    const y = now.toLocaleDateString("es-AR", { year: "numeric" });
+    return `${m} ${y}`;
+  }
+  function updateTitleDate(){
+    const now = new Date();
+    const el = document.getElementById("titleDate");
+    if (!el) return;
+    el.textContent = `Día: ${formatDay(now)} · Mes: ${formatMonth(now)}`;
+  }
+  function scheduleMidnightUpdate(){
+    const now = new Date();
+    const next = new Date(now);
+    next.setHours(24, 0, 5, 0); // 00:00:05
+    const ms = next.getTime() - now.getTime();
+    setTimeout(() => {
+      updateTitleDate();
+      scheduleMidnightUpdate();
+    }, ms);
+  }
+  // ==========================================
 
   // CSV robusto: autodetecta delimitador
   function detectDelimiter(text){
@@ -485,6 +494,7 @@
   async function fetchItems(){
     setStatus("consultando…");
 
+    // Cache busting para "tiempo real"
     const res = await fetch(`${CSV_URL}&_=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
 
@@ -513,8 +523,6 @@
 
     document.getElementById("thDay").textContent = dayLabel;
     document.getElementById("thAcum").textContent = acumLabel;
-    document.getElementById("dayLabel").textContent = dayLabel;
-    document.getElementById("acumLabel").textContent = acumLabel;
 
     const items = dataRows
       .map(r => {
@@ -537,17 +545,14 @@
     return sortItems(items);
   }
 
-  function renderKPIGrid(containerId, items, mode){
+  function renderKPIGrid(containerId, items){
     const grid = document.getElementById(containerId);
     grid.innerHTML = "";
 
     items.forEach(it => {
-      const raw = mode === "day" ? it.diaRaw : it.acumRaw;
-      const val = mode === "day" ? it.dia : it.acum;
+      const status = kpiStatus(it.indicador, it.dia);
 
-      const status = kpiStatus(it.indicador, val);
-
-      const formatted = formatValue(it.indicador, raw);
+      const formatted = formatValue(it.indicador, it.diaRaw);
       const isEmpty = formatted === "—";
 
       const div = document.createElement("div");
@@ -559,7 +564,7 @@
         <div class="val ${isEmpty ? "val-empty" : ""}">${formatted}</div>
         <div class="sub">
           <span class="${statusClass(status)}">${statusLabel(status)}</span>
-          <span class="muted">${mode === "day" ? "Día" : "Mes"}</span>
+          <span class="muted">Día</span>
         </div>
       `;
       grid.appendChild(div);
@@ -618,11 +623,11 @@
   async function refresh(){
     try{
       hideHelp();
+      updateTitleDate(); // Día/Mes del sistema (auto)
+
       const items = await fetchItems();
 
-      renderKPIGrid("kpiGridDay", items, "day");
-      renderKPIGrid("kpiGridAcum", items, "acum");
-
+      renderKPIGrid("kpiGrid", items);
       renderTable(items);
       renderChart(items);
 
@@ -656,6 +661,11 @@
     if (document.hidden) { if (timer) clearInterval(timer); }
     else { refresh(); startTimer(); }
   });
+
+  // Inicialización
+  updateTitleDate();
+  setInterval(updateTitleDate, 60 * 1000); // se actualiza solo cada minuto
+  scheduleMidnightUpdate();                // refuerzo exacto al cambio de día
 
   refresh();
   startTimer();
