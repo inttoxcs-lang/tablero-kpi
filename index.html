@@ -85,13 +85,13 @@
     .kpi-grid{
       display:grid; gap:10px;
       grid-template-columns: repeat(4, minmax(0,1fr));
-      align-items: stretch; /* asegura alturas consistentes */
+      align-items: stretch;
     }
     @media (max-width: 960px){
       .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
-    /* KPI cards alineadas y ordenadas */
+    /* KPI cards alineadas */
     .kpi{
       padding:12px;
       border-radius: 12px;
@@ -102,13 +102,13 @@
       flex-direction: column;
       justify-content: space-between;
 
-      min-height: 140px; /* CLAVE: todas iguales */
+      min-height: 140px;
     }
     .kpi .name{
       font-size:12px;
       color: var(--muted);
       margin-bottom: 6px;
-      min-height: 32px; /* reserva espacio para títulos largos */
+      min-height: 32px;
     }
     .kpi .val{
       font-size:22px;
@@ -120,7 +120,7 @@
       font-size:12px;
       color: var(--muted);
       display:flex;
-      justify-content: flex-end; /* estado siempre abajo a la derecha */
+      justify-content: flex-end;
       align-items:center;
     }
 
@@ -138,9 +138,7 @@
       .row{ grid-template-columns: 1fr; }
     }
 
-    .full-row{
-      margin-top: 14px;
-    }
+    .full-row{ margin-top: 14px; }
 
     canvas{ width:100% !important; height: 360px !important; }
 
@@ -348,9 +346,20 @@
     return String(v ?? "").includes("%");
   }
 
-  function badgeForValue(val){
+  // Reglas acordadas para porcentajes:
+  // - >= 80%  -> OK (verde)
+  // - >= 40%  -> Atención (amarillo)
+  // - < 40%   -> Crítico (rojo)
+  // No porcentuales: "ver" (amarillo) por no tener umbrales definidos.
+  function badgeForValue(val, isPercent){
     if (val === null) return { text: "s/d", cls: "pill warn" };
-    if (Math.abs(val) < 0.01) return { text: "OK", cls: "pill good" };
+
+    if (isPercent){
+      if (val >= 80) return { text: "OK", cls: "pill good" };
+      if (val >= 40) return { text: "Atención", cls: "pill warn" };
+      return { text: "Crítico", cls: "pill bad" };
+    }
+
     return { text: "ver", cls: "pill warn" };
   }
 
@@ -369,7 +378,6 @@
 
     // Detección por nombre
     const hLower = headers.map(h => lower(h));
-
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
     const idxDia   = hLower.findIndex(h => h.includes("día") || h.includes("dia") || h.includes("diario"));
     const idxMes   = hLower.findIndex(h => h.includes("mes") || h.includes("mensual") || h.includes("acum") || h.includes("acumul"));
@@ -419,7 +427,7 @@
       const val = mode === "day" ? it.dia : it.mes;
       const pct = mode === "day" ? it.pctDia : it.pctMes;
 
-      const badge = badgeForValue(val);
+      const badge = badgeForValue(val, pct);
       const valText = raw === "" ? "—" : (pct ? `${val ?? "—"}%` : raw);
 
       const div = document.createElement("div");
