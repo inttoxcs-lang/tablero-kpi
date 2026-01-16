@@ -3,19 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Transporte San José S.A</title>
+  <title>Tablero KPI - Transporte San José S.A (Tráfico)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg:#0b1220;
       --muted:#8fa3c0;
       --text:#eaf1ff;
       --border:rgba(255,255,255,.08);
+
       --good:#29d391;
       --warn:#ffd166;
       --bad:#ff5c7a;
+
       --goodB:rgba(41,211,145,.45);
       --warnB:rgba(255,209,102,.35);
       --badB: rgba(255,92,122,.45);
@@ -23,83 +24,136 @@
 
     *{ box-sizing:border-box; }
 
+    html, body{ height:100%; }
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
       color:var(--text);
+      background: #0b1220; /* fallback */
       position:relative;
       overflow-x:hidden;
     }
 
-    /* BANDERA DE FONDO */
+    /* FONDO BANDERA (capa inferior) */
     body::before{
       content:"";
       position:fixed;
       inset:0;
-      background:
-        linear-gradient(rgba(11,18,32,.85), rgba(11,18,32,.85)),
+      z-index:-2;
+      background-image:
         url("https://upload.wikimedia.org/wikipedia/commons/1/1a/Flag_of_Argentina.svg");
       background-size:cover;
       background-position:center;
       background-repeat:no-repeat;
-      z-index:-2;
+      opacity:0.55; /* bandera visible */
+      transform: translateZ(0);
+    }
+
+    /* OVERLAY oscuro para legibilidad (capa superior a la bandera) */
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(19,32,67,.80) 0%, rgba(11,18,32,.92) 55%);
+      pointer-events:none;
+      transform: translateZ(0);
     }
 
     header{
       padding:18px 22px;
       display:flex;
-      justify-content:space-between;
       align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
       border-bottom:1px solid var(--border);
-      position:sticky;
-      top:0;
       backdrop-filter: blur(8px);
-      background: rgba(11,18,32,.6);
+      position:sticky; top:0;
+      background: rgba(11,18,32,.55);
       z-index:10;
     }
 
     h1{ margin:0; font-size:18px; }
 
-    .meta{ font-size:12px; color:var(--muted); display:flex; gap:16px; }
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      gap:16px;
+      align-items:center;
+    }
 
-    .wrap{ padding:18px 22px 28px; max-width:1200px; margin:auto; }
+    .wrap{ padding:18px 22px 28px; max-width:1200px; margin:0 auto; }
 
-    .grid2{ display:grid; gap:14px; grid-template-columns:1fr 1fr; }
+    .grid2{
+      display:grid;
+      gap:14px;
+      grid-template-columns:1fr 1fr;
+    }
     @media (max-width:960px){ .grid2{ grid-template-columns:1fr; } }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
-      box-shadow:0 10px 28px rgba(0,0,0,.35);
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
       backdrop-filter: blur(4px);
     }
 
-    .card h2{ margin:0 0 10px; font-size:14px; color:#cfe0ff; }
-
+    .card h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:#cfe0ff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
     .subtitle{ font-size:12px; color:var(--muted); }
 
     .kpi-grid{
       display:grid;
       gap:10px;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      align-items:stretch;
     }
     @media (max-width:960px){ .kpi-grid{ grid-template-columns:repeat(2,1fr); } }
 
     .kpi{
       padding:12px;
       border-radius:12px;
-      background:rgba(0,0,0,.25);
+      background:rgba(255,255,255,.03);
       border:1px solid var(--border);
       display:flex;
       flex-direction:column;
       min-height:136px;
     }
-
-    .kpi .name{ font-size:12px; color:var(--muted); margin-bottom:10px; }
-    .kpi .val{ font-size:24px; font-weight:800; }
-    .kpi .sub{ margin-top:auto; font-size:12px; }
+    .kpi .name{
+      font-size:12px;
+      color:var(--muted);
+      min-height:2.4em;
+      line-height:1.2;
+      margin-bottom:10px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .kpi .val{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+    }
+    .kpi .sub{
+      margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:12px;
+      color:var(--muted);
+    }
 
     .pill{
       padding:2px 8px;
@@ -125,33 +179,39 @@
       width:100%;
       border-collapse:collapse;
       font-size:12px;
-      border:1px solid var(--border);
       border-radius:12px;
       overflow:hidden;
+      border:1px solid var(--border);
     }
-
-    th,td{ padding:10px; border-bottom:1px solid var(--border); }
-    th{ background:rgba(255,255,255,.04); color:#cfe0ff; }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+    }
+    th{
+      background:rgba(255,255,255,.03);
+      color:#cfe0ff;
+      text-align:left;
+    }
     td.right{ text-align:right; }
+    tr:last-child td{ border-bottom:none; }
 
-    /* GIF MARADONA */
+    /* GIF CENTRADO */
     #gifCenter{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-      pointer-events:none;
+      position: fixed;
+      inset: 0;
+      display: none; /* se muestra cuando hay KPI crítico */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
     }
-
     #gifCenter img{
-      max-width:420px;
-      width:35vw;
-      min-width:220px;
-      opacity:.95;
-      border-radius:12px;
-      box-shadow:0 18px 50px rgba(0,0,0,.65);
+      max-width: 420px;
+      width: 35vw;
+      min-width: 220px;
+      opacity: 0.92;
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
     }
 
     /* BOTÓN MÚSICA */
@@ -160,20 +220,29 @@
       bottom:20px;
       right:20px;
       z-index:10000;
-      background:rgba(0,0,0,.65);
+      background:rgba(0,0,0,.6);
       color:#fff;
-      border:1px solid rgba(255,255,255,.25);
+      border:1px solid rgba(255,255,255,.2);
       border-radius:999px;
       padding:10px 14px;
       font-size:14px;
       cursor:pointer;
       backdrop-filter: blur(6px);
     }
+
+    /* Contenedor YouTube fuera de pantalla (NO display:none) */
+    #ytHost{
+      position:fixed;
+      left:-9999px;
+      top:-9999px;
+      width:1px;
+      height:1px;
+      overflow:hidden;
+    }
   </style>
 </head>
 
 <body>
-
 <header>
   <h1>Tablero KPI - Transporte San José S.A</h1>
   <div class="meta">
@@ -219,33 +288,211 @@
 
 </div>
 
+<!-- GIF -->
 <div id="gifCenter">
   <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXY2Mmxpb2s2NThkMDNnNzV4enh5MGd0Z2R6azV1M3F4bDF4dTZ6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hSogTpRXbb8bhNWV3r/giphy.gif" alt="Maradona">
 </div>
 
+<!-- Música -->
 <button id="musicBtn">▶ Música</button>
-
+<div id="ytHost"><div id="ytPlayer"></div></div>
 <script src="https://www.youtube.com/iframe_api"></script>
-<div style="display:none">
-  <iframe id="ytPlayer" width="0" height="0"
-    src="https://www.youtube.com/embed/eVTXPUF4Oz4?enablejsapi=1"
-    allow="autoplay"></iframe>
-</div>
 
 <script>
-let ytPlayer, ytPlaying=false;
+const PUBLISHED_KEY="2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
+const CSV_URL=`https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=0`;
 
-function onYouTubeIframeAPIReady(){
-  ytPlayer = new YT.Player('ytPlayer');
+const YT_VIDEO_ID = "eVTXPUF4Oz4"; // link: https://www.youtube.com/watch?v=eVTXPUF4Oz4
+
+const RULES=[
+ {match:/cumplimiento/i,type:"min",green:98,yellow:95},
+ {match:/titularidad/i,type:"min",green:95,yellow:92},
+ {match:/siniestros|reclamos/i,type:"max",green:0,yellow:1},
+ {match:/ipk/i,type:"min",green:0.6,yellow:0.55}
+];
+
+let barChart;
+let ytPlayer = null;
+let ytReady = false;
+let ytPlaying = false;
+
+function toNumber(v){
+  if(v===undefined || v===null) return null;
+  let s=String(v).trim();
+  if(!s) return null;
+  if(s.includes("%")) s=s.replace("%","").trim();
+  s = s.replace(/\./g,"").replace(",",".");
+
+  const n=Number(s);
+  return Number.isNaN(n)?null:n;
 }
 
-musicBtn.onclick = () => {
-  if(!ytPlayer) return;
-  ytPlaying ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
-  ytPlaying = !ytPlaying;
-  musicBtn.textContent = ytPlaying ? "⏸ Música" : "▶ Música";
-};
-</script>
+function format(v){
+  if(v===""||v==null) return "—";
+  const s = String(v).trim();
+  if(!s) return "—";
+  if(s.includes("%")){
+    const n = toNumber(s);
+    return (n===null) ? s : (Math.round(n) + "%");
+  }
+  const n=toNumber(s);
+  if(n===null) return s;
+  if(Number.isInteger(n)) return String(n);
+  return n.toFixed(2).replace(".",",");
+}
 
+function status(ind,val){
+  let r=RULES.find(x=>x.match.test(ind));
+  if(!r||val===null) return "warn";
+  if(r.type==="min"){
+    if(val>=r.green) return "good";
+    if(val>=r.yellow) return "warn";
+    return "bad";
+  }else{
+    if(val<=r.green) return "good";
+    if(val<=r.yellow) return "warn";
+    return "bad";
+  }
+}
+
+function ensureChart(labels, dayData, monData){
+  const ctx = document.getElementById("barChart");
+  if(barChart){
+    barChart.data.labels = labels;
+    barChart.data.datasets[0].data = dayData;
+    barChart.data.datasets[1].data = monData;
+    barChart.update();
+    return;
+  }
+  barChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Día", data: dayData },
+        { label: "Mes", data: monData }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#cfe0ff" } } },
+      scales: {
+        x: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } },
+        y: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } }
+      }
+    }
+  });
+}
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  return lines.map(line => line.split(","));
+}
+
+/* YouTube API callback */
+function onYouTubeIframeAPIReady(){
+  ytPlayer = new YT.Player("ytPlayer", {
+    videoId: YT_VIDEO_ID,
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      rel: 0,
+      playsinline: 1
+    },
+    events: {
+      onReady: () => { ytReady = true; },
+      onStateChange: (e) => {
+        // 1 = playing, 2 = paused, 0 = ended
+        if(e.data === YT.PlayerState.PLAYING) ytPlaying = true;
+        if(e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) ytPlaying = false;
+        document.getElementById("musicBtn").textContent = ytPlaying ? "⏸ Música" : "▶ Música";
+      }
+    }
+  });
+}
+
+async function refresh(){
+  try{
+    const res=await fetch(CSV_URL+"&_="+Date.now());
+    const csv = await res.text();
+
+    const rows = parseCSV(csv);
+    const data = rows.slice(1).map(r => ({
+      ind: (r[0] ?? "").trim(),
+      day: r[1] ?? "",
+      mon: r[2] ?? "",
+      d: toNumber(r[1]),
+      m: toNumber(r[2])
+    })).filter(x => x.ind.length);
+
+    document.getElementById("kpiDay").innerHTML="";
+    document.getElementById("kpiMonth").innerHTML="";
+    document.getElementById("detailBody").innerHTML="";
+
+    let anyCritical = false;
+
+    data.forEach(it=>{
+      const sd = status(it.ind, it.d);
+      if(sd==="bad") anyCritical = true;
+
+      const divD=document.createElement("div");
+      divD.className="kpi";
+      divD.style.borderColor= sd==="good"? "var(--goodB)":sd==="bad"?"var(--badB)":"var(--warnB)";
+      divD.innerHTML=`
+        <div class="name">${it.ind}</div>
+        <div class="val">${format(it.day)}</div>
+        <div class="sub"><span class="pill ${sd}">${sd==="good"?"OK":sd==="bad"?"Crítico":"Atención"}</span></div>`;
+      document.getElementById("kpiDay").appendChild(divD);
+
+      const sm = status(it.ind, it.m);
+      if(sm==="bad") anyCritical = true;
+
+      const divM=document.createElement("div");
+      divM.className="kpi";
+      divM.style.borderColor= sm==="good"? "var(--goodB)":sm==="bad"?"var(--badB)":"var(--warnB)";
+      divM.innerHTML=`
+        <div class="name">${it.ind}</div>
+        <div class="val">${format(it.mon)}</div>
+        <div class="sub"><span class="pill ${sm}">${sm==="good"?"OK":sm==="bad"?"Crítico":"Atención"}</span></div>`;
+      document.getElementById("kpiMonth").appendChild(divM);
+
+      document.getElementById("detailBody").innerHTML +=
+        `<tr><td>${it.ind}</td><td class="right">${format(it.day)}</td><td class="right">${format(it.mon)}</td></tr>`;
+    });
+
+    document.getElementById("gifCenter").style.display = anyCritical ? "flex" : "none";
+
+    ensureChart(
+      data.map(x=>x.ind),
+      data.map(x=>(x.d ?? 0)),
+      data.map(x=>(x.m ?? 0))
+    );
+
+    document.getElementById("status").textContent="OK";
+    document.getElementById("lastUpdate").textContent=new Date().toLocaleString("es-AR");
+
+  }catch(e){
+    document.getElementById("status").textContent="ERROR";
+    console.error(e);
+  }
+}
+
+refresh();
+setInterval(refresh,30000);
+
+/* Botón Música */
+document.getElementById("musicBtn").addEventListener("click", () => {
+  if(!ytReady || !ytPlayer){
+    console.warn("YouTube aún no está listo.");
+    return;
+  }
+  if(!ytPlaying){
+    ytPlayer.playVideo(); // requiere clic del usuario
+  }else{
+    ytPlayer.pauseVideo();
+  }
+});
+</script>
 </body>
 </html>
