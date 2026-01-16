@@ -3,43 +3,48 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día / Mes)</title>
+  <title>Tablero KPI - Google Sheets (Día / Mes + gráfico único)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root {
-      --bg: #0b1220;
-      --muted: #8fa3c0;
-      --text: #eaf1ff;
-      --border: rgba(255,255,255,.08);
-      --good: #29d391;
-      --warn: #ffd166;
-      --bad:  #ff5c7a;
+    :root{
+      --bg:#0b1220;
+      --muted:#8fa3c0;
+      --text:#eaf1ff;
+      --border:rgba(255,255,255,.08);
+      --good:#29d391;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
+      --focus: rgba(207,224,255,.65);
     }
-    * { box-sizing: border-box; }
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background: radial-gradient(1200px 800px at 20% 0%, #132043 0%, var(--bg) 55%);
       color: var(--text);
+      font-size: 14px;
     }
 
     header{
-      padding: 18px 22px;
+      padding:18px 22px;
       display:flex; align-items: baseline; justify-content: space-between; gap: 12px;
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(8px);
       position: sticky; top: 0;
       background: rgba(11,18,32,.55);
-      z-index: 5;
+      z-index: 10;
     }
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
 
-    .meta{ color: var(--muted); font-size: 12px; display:flex; gap: 16px; flex-wrap: wrap; align-items:center; }
+    .meta{
+      color: var(--muted);
+      font-size:12px;
+      display:flex; gap:16px; flex-wrap: wrap; align-items:center;
+    }
     .controls{ display:flex; gap:10px; align-items:center; }
     .controls label{ font-size:12px; color: var(--muted); }
-
     input[type="number"]{
       width:110px;
       background: rgba(255,255,255,.04);
@@ -60,11 +65,17 @@
     }
     button:hover{ background: rgba(255,255,255,.09); }
 
+    /* Focus visible (teclado) */
+    button:focus-visible,
+    input:focus-visible,
+    .tab:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
     .wrap{ padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
 
-    .tabs{
-      display:flex; gap:10px; align-items:center;
-    }
+    .tabs{ display:flex; gap:10px; align-items:center; }
     .tab{
       border: 1px solid var(--border);
       background: rgba(255,255,255,.04);
@@ -122,7 +133,7 @@
       .row{ grid-template-columns: 1fr; }
     }
 
-    canvas{ width:100% !important; height: 280px !important; }
+    canvas{ width:100% !important; height: 320px !important; }
 
     table{
       width:100%;
@@ -136,6 +147,7 @@
     th{ text-align:left; color:#cfe0ff; background: rgba(255,255,255,.03); }
     td{ color: var(--text); }
     tr:last-child td{ border-bottom:none; }
+    tr:hover td{ background: rgba(255,255,255,.02); }
     .right{ text-align:right; }
     .muted{ color: var(--muted); }
 
@@ -159,10 +171,26 @@
 <body>
 <header>
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;">
-    <h1>Tablero KPI (Google Sheets)</h1>
+    <h1>Tablero KPI - Transporte San José S.A (Tráfico PRA)</h1>
+
     <div class="tabs" role="tablist" aria-label="Cambiar vista">
-      <div class="tab active" id="tabDay"  role="tab" aria-selected="true">Día</div>
-      <div class="tab"        id="tabMes"  role="tab" aria-selected="false">Mes</div>
+      <button
+        class="tab active"
+        id="tabDay"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="layoutDay"
+      >Día</button>
+
+      <button
+        class="tab"
+        id="tabMes"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="layoutMes"
+      >Mes</button>
     </div>
   </div>
 
@@ -170,79 +198,68 @@
     <div>Estado: <span id="status" class="muted">iniciando…</span></div>
     <div>Última actualización: <span id="lastUpdate" class="muted">—</span></div>
     <div class="controls">
-      <label>Refresh (s)</label>
+      <label for="refreshSec">Refresh (s)</label>
       <input id="refreshSec" type="number" min="5" step="5" value="30" />
-      <button id="btnNow">Actualizar</button>
+      <button id="btnNow" type="button">Actualizar</button>
     </div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- ===================== LAYOUT DIA ===================== -->
-  <section id="layoutDay" class="layout active">
-    <div class="card">
+  <!-- ÚNICO GRÁFICO COMPARATIVO (SIEMPRE VISIBLE) -->
+  <div class="card">
+    <h2>Comparativo (Día vs Mes)</h2>
+    <canvas id="chartCompare"></canvas>
+
+    <!-- Mensajes del gráfico (cuando no hay datos o falla fetch) -->
+    <div id="chartMsg" class="alert" style="display:none;margin-top:10px;"></div>
+
+    <div class="muted" style="margin-top:10px;font-size:12px;">
+      Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
+    </div>
+  </div>
+
+  <!-- LAYOUTS SEPARADOS (SIN GRÁFICO) -->
+  <div class="row">
+    <!-- DIA -->
+    <section id="layoutDay" class="card layout active" role="tabpanel" aria-labelledby="tabDay">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
+
+      <h2 style="margin-top:14px;">Detalle (Día)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th class="right" id="thDayLabel">Día</th>
+          </tr>
+        </thead>
+        <tbody id="detailBodyDay"></tbody>
+      </table>
+
       <div id="helpDay" class="alert" style="display:none;"></div>
-    </div>
+    </section>
 
-    <div class="row">
-      <div class="card">
-        <h2>Top indicadores (Día)</h2>
-        <canvas id="chartDay"></canvas>
-      </div>
-
-      <div class="card">
-        <h2>Detalle (Día)</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th class="right" id="thDayLabel">Día</th>
-            </tr>
-          </thead>
-          <tbody id="detailBodyDay"></tbody>
-        </table>
-        <div class="muted" style="margin-top:10px;font-size:12px;">
-          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== LAYOUT MES ===================== -->
-  <section id="layoutMes" class="layout">
-    <div class="card">
+    <!-- MES -->
+    <section id="layoutMes" class="card layout" role="tabpanel" aria-labelledby="tabMes">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
+
+      <h2 style="margin-top:14px;">Detalle (Mes)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th class="right" id="thMesLabel">Mes</th>
+          </tr>
+        </thead>
+        <tbody id="detailBodyMes"></tbody>
+      </table>
+
       <div id="helpMes" class="alert" style="display:none;"></div>
-    </div>
-
-    <div class="row">
-      <div class="card">
-        <h2>Top indicadores (Mes)</h2>
-        <canvas id="chartMes"></canvas>
-      </div>
-
-      <div class="card">
-        <h2>Detalle (Mes)</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th class="right" id="thMesLabel">Mes</th>
-            </tr>
-          </thead>
-          <tbody id="detailBodyMes"></tbody>
-        </table>
-        <div class="muted" style="margin-top:10px;font-size:12px;">
-          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-        </div>
-      </div>
-    </div>
-  </section>
-
+    </section>
+  </div>
 </div>
 
 <script>
@@ -254,7 +271,7 @@
   const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
   // ============================================================================
 
-  let chartDay, chartMes;
+  let chartCompare;
 
   function setStatus(txt){ document.getElementById("status").textContent = txt; }
   function setLastUpdate(d){
@@ -268,6 +285,17 @@
   }
   function hideHelp(which){
     const el = document.getElementById(which === "day" ? "helpDay" : "helpMes");
+    el.style.display = "none";
+    el.innerHTML = "";
+  }
+
+  function showChartMsg(html){
+    const el = document.getElementById("chartMsg");
+    el.style.display = "block";
+    el.innerHTML = html;
+  }
+  function hideChartMsg(){
+    const el = document.getElementById("chartMsg");
     el.style.display = "none";
     el.innerHTML = "";
   }
@@ -322,7 +350,10 @@
     let s = String(v).trim();
     if (!s) return null;
 
+    // % -> se conserva como 0-100
     s = s.replace("%","").trim();
+
+    // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
     s = s.replace(",", ".");
 
@@ -334,6 +365,7 @@
     return String(v ?? "").includes("%");
   }
 
+  // Badge simple (no compara con la otra columna; layouts independientes)
   function badgeForValue(val){
     if (val === null) return { text: "s/d", cls: "pill warn" };
     if (Math.abs(val) < 0.01) return { text: "OK", cls: "pill good" };
@@ -342,6 +374,7 @@
 
   async function fetchData(){
     setStatus("consultando…");
+
     const res = await fetch(CSV_URL, { cache: "no-store" });
     if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
 
@@ -352,6 +385,7 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
+    // Detección por nombre
     const hLower = headers.map(h => lower(h));
 
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
@@ -362,6 +396,7 @@
     let iDia   = idxDia   !== -1 ? idxDia   : 1;
     let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
 
+    // Resolver colisiones
     if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
     if (iMes === iIndic || iMes === iDia){
       const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
@@ -388,14 +423,13 @@
       })
       .filter(x => x.indicador);
 
-    if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
+    if (!items.length) throw new Error("No se pudieron construir items: revisá la columna del indicador.");
 
     return { items, dayLabel, mesLabel };
   }
 
-  function renderKPIsSingle(items, mode){
-    const gridId = mode === "day" ? "kpiGridDay" : "kpiGridMes";
-    const grid = document.getElementById(gridId);
+  function renderKPIs(items, mode){
+    const grid = document.getElementById(mode === "day" ? "kpiGridDay" : "kpiGridMes");
     grid.innerHTML = "";
 
     items.slice(0, 8).forEach(it => {
@@ -420,9 +454,8 @@
     });
   }
 
-  function renderTableSingle(items, mode){
-    const bodyId = mode === "day" ? "detailBodyDay" : "detailBodyMes";
-    const body = document.getElementById(bodyId);
+  function renderTable(items, mode){
+    const body = document.getElementById(mode === "day" ? "detailBodyDay" : "detailBodyMes");
     body.innerHTML = "";
 
     items.forEach(it => {
@@ -436,37 +469,70 @@
     });
   }
 
-  function renderChartSingle(items, mode, label){
-    const canvasId = mode === "day" ? "chartDay" : "chartMes";
+  function renderCompareChart(items, dayLabel, mesLabel){
+    // Tomamos los primeros 12, pero solo graficamos los que aporten números
     const slice = items.slice(0, 12);
 
-    const labels = slice.map(x => x.indicador);
-    const series = slice.map(x => mode === "day" ? x.dia : x.mes);
+    const labels = [];
+    const daySeries = [];
+    const mesSeries = [];
 
-    const ctx = document.getElementById(canvasId);
+    for (const x of slice){
+      const d = Number.isFinite(x.dia) ? x.dia : null;
+      const m = Number.isFinite(x.mes) ? x.mes : null;
 
-    if (mode === "day" && chartDay) chartDay.destroy();
-    if (mode === "mes" && chartMes) chartMes.destroy();
+      // Si ambos son null, no aporta al gráfico
+      if (d === null && m === null) continue;
 
-    const chart = new Chart(ctx, {
+      labels.push(x.indicador);
+      daySeries.push(d);
+      mesSeries.push(m);
+    }
+
+    // Si no quedó nada graficable, destruir chart y avisar
+    if (!labels.length){
+      if (chartCompare) { chartCompare.destroy(); chartCompare = null; }
+      showChartMsg("No hay valores numéricos suficientes para graficar (revisá que Día/Mes sean números o porcentajes).");
+      return;
+    }
+
+    hideChartMsg();
+
+    const canvas = document.getElementById("chartCompare");
+    const ctx = canvas.getContext("2d");
+
+    if (chartCompare) chartCompare.destroy();
+
+    chartCompare = new Chart(ctx, {
       type: "bar",
       data: {
         labels,
-        datasets: [{ label, data: series }]
+        datasets: [
+          { label: dayLabel, data: daySeries },
+          { label: mesLabel, data: mesSeries }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: "#eaf1ff" } } },
+        animation: false,
+        plugins: {
+          legend: { labels: { color: "#eaf1ff" } },
+          tooltip: {
+            callbacks: {
+              label: (c) => {
+                const v = c.raw;
+                return `${c.dataset.label}: ${v === null ? "—" : v}`;
+              }
+            }
+          }
+        },
         scales: {
           x: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } },
           y: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } }
         }
       }
     });
-
-    if (mode === "day") chartDay = chart;
-    else chartMes = chart;
   }
 
   function setActiveLayout(mode){
@@ -482,29 +548,51 @@
     document.getElementById("tabMes").setAttribute("aria-selected", String(!isDay));
   }
 
+  // Opcional: hacer que el tab afecte el gráfico (resalta ocultando el otro dataset)
+  function setChartFocus(mode){
+    if (!chartCompare) return;
+    const focusDay = mode === "day";
+
+    // ocultar el no seleccionado (comportamiento “esperable” para usuario final)
+    chartCompare.data.datasets[0].hidden = !focusDay;
+    chartCompare.data.datasets[1].hidden = focusDay;
+
+    chartCompare.update();
+  }
+
   async function refresh(){
     try{
       hideHelp("day");
       hideHelp("mes");
+      hideChartMsg();
 
       const { items, dayLabel, mesLabel } = await fetchData();
 
+      // Labels en tablas
       document.getElementById("thDayLabel").textContent = dayLabel;
       document.getElementById("thMesLabel").textContent = mesLabel;
 
-      renderKPIsSingle(items, "day");
-      renderTableSingle(items, "day");
-      renderChartSingle(items, "day", dayLabel);
+      // Layouts separados (sin cruce)
+      renderKPIs(items, "day");
+      renderTable(items, "day");
 
-      renderKPIsSingle(items, "mes");
-      renderTableSingle(items, "mes");
-      renderChartSingle(items, "mes", mesLabel);
+      renderKPIs(items, "mes");
+      renderTable(items, "mes");
+
+      // Único gráfico comparativo
+      renderCompareChart(items, dayLabel, mesLabel);
 
       setStatus("ok");
       setLastUpdate(new Date());
+
+      // Mantener foco del gráfico acorde al tab activo
+      const isDayActive = document.getElementById("tabDay").classList.contains("active");
+      setChartFocus(isDayActive ? "day" : "mes");
     } catch (err){
       console.error(err);
       setStatus("error: " + err.message);
+
+      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://.");
 
       const isFile = location.protocol === "file:";
       const helpHtml = `
@@ -526,6 +614,7 @@
     }
   }
 
+  // Auto refresh
   let timer;
   function startTimer(){
     if (timer) clearInterval(timer);
@@ -536,8 +625,15 @@
   document.getElementById("btnNow").addEventListener("click", () => refresh());
   document.getElementById("refreshSec").addEventListener("change", () => startTimer());
 
-  document.getElementById("tabDay").addEventListener("click", () => setActiveLayout("day"));
-  document.getElementById("tabMes").addEventListener("click", () => setActiveLayout("mes"));
+  document.getElementById("tabDay").addEventListener("click", () => {
+    setActiveLayout("day");
+    setChartFocus("day");
+  });
+
+  document.getElementById("tabMes").addEventListener("click", () => {
+    setActiveLayout("mes");
+    setChartFocus("mes");
+  });
 
   refresh();
   startTimer();
