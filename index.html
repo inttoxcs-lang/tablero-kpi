@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día / Mes)</title>
+  <title>Tablero KPI - Google Sheets (Día / Mes + gráfico único)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root {
-      --bg: #0b1220;
-      --muted: #8fa3c0;
-      --text: #eaf1ff;
-      --border: rgba(255,255,255,.08);
-      --good: #29d391;
-      --warn: #ffd166;
-      --bad:  #ff5c7a;
+    :root{
+      --bg:#0b1220;
+      --muted:#8fa3c0;
+      --text:#eaf1ff;
+      --border:rgba(255,255,255,.08);
+      --good:#29d391;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
     }
-    * { box-sizing: border-box; }
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -26,20 +26,23 @@
     }
 
     header{
-      padding: 18px 22px;
+      padding:18px 22px;
       display:flex; align-items: baseline; justify-content: space-between; gap: 12px;
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(8px);
       position: sticky; top: 0;
       background: rgba(11,18,32,.55);
-      z-index: 5;
+      z-index: 10;
     }
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
 
-    .meta{ color: var(--muted); font-size: 12px; display:flex; gap: 16px; flex-wrap: wrap; align-items:center; }
+    .meta{
+      color: var(--muted);
+      font-size:12px;
+      display:flex; gap:16px; flex-wrap: wrap; align-items:center;
+    }
     .controls{ display:flex; gap:10px; align-items:center; }
     .controls label{ font-size:12px; color: var(--muted); }
-
     input[type="number"]{
       width:110px;
       background: rgba(255,255,255,.04);
@@ -62,9 +65,7 @@
 
     .wrap{ padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
 
-    .tabs{
-      display:flex; gap:10px; align-items:center;
-    }
+    .tabs{ display:flex; gap:10px; align-items:center; }
     .tab{
       border: 1px solid var(--border);
       background: rgba(255,255,255,.04);
@@ -122,7 +123,7 @@
       .row{ grid-template-columns: 1fr; }
     }
 
-    canvas{ width:100% !important; height: 280px !important; }
+    canvas{ width:100% !important; height: 320px !important; }
 
     table{
       width:100%;
@@ -159,10 +160,10 @@
 <body>
 <header>
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;">
-    <h1>Tablero KPI (Google Sheets)</h1>
+    <h1>Tablero KPI - Transporte San José S.A (Tráfico PRA)</h1>
     <div class="tabs" role="tablist" aria-label="Cambiar vista">
-      <div class="tab active" id="tabDay"  role="tab" aria-selected="true">Día</div>
-      <div class="tab"        id="tabMes"  role="tab" aria-selected="false">Mes</div>
+      <div class="tab active" id="tabDay" role="tab" aria-selected="true">Día</div>
+      <div class="tab" id="tabMes" role="tab" aria-selected="false">Mes</div>
     </div>
   </div>
 
@@ -179,70 +180,55 @@
 
 <div class="wrap">
 
-  <!-- ===================== LAYOUT DIA ===================== -->
-  <section id="layoutDay" class="layout active">
-    <div class="card">
+  <!-- ÚNICO GRÁFICO COMPARATIVO (SIEMPRE VISIBLE) -->
+  <div class="card">
+    <h2>Comparativo (Día vs Mes)</h2>
+    <canvas id="chartCompare"></canvas>
+    <div class="muted" style="margin-top:10px;font-size:12px;">
+      Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
+    </div>
+  </div>
+
+  <!-- LAYOUTS SEPARADOS (SIN GRÁFICO) -->
+  <div class="row">
+    <!-- DIA -->
+    <section id="layoutDay" class="card layout active">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
+
+      <h2 style="margin-top:14px;">Detalle (Día)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th class="right" id="thDayLabel">Día</th>
+          </tr>
+        </thead>
+        <tbody id="detailBodyDay"></tbody>
+      </table>
+
       <div id="helpDay" class="alert" style="display:none;"></div>
-    </div>
+    </section>
 
-    <div class="row">
-      <div class="card">
-        <h2>Top indicadores (Día)</h2>
-        <canvas id="chartDay"></canvas>
-      </div>
-
-      <div class="card">
-        <h2>Detalle (Día)</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th class="right" id="thDayLabel">Día</th>
-            </tr>
-          </thead>
-          <tbody id="detailBodyDay"></tbody>
-        </table>
-        <div class="muted" style="margin-top:10px;font-size:12px;">
-          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== LAYOUT MES ===================== -->
-  <section id="layoutMes" class="layout">
-    <div class="card">
+    <!-- MES -->
+    <section id="layoutMes" class="card layout">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
+
+      <h2 style="margin-top:14px;">Detalle (Mes)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th class="right" id="thMesLabel">Mes</th>
+          </tr>
+        </thead>
+        <tbody id="detailBodyMes"></tbody>
+      </table>
+
       <div id="helpMes" class="alert" style="display:none;"></div>
-    </div>
-
-    <div class="row">
-      <div class="card">
-        <h2>Top indicadores (Mes)</h2>
-        <canvas id="chartMes"></canvas>
-      </div>
-
-      <div class="card">
-        <h2>Detalle (Mes)</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th class="right" id="thMesLabel">Mes</th>
-            </tr>
-          </thead>
-          <tbody id="detailBodyMes"></tbody>
-        </table>
-        <div class="muted" style="margin-top:10px;font-size:12px;">
-          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-        </div>
-      </div>
-    </div>
-  </section>
-
+    </section>
+  </div>
 </div>
 
 <script>
@@ -254,7 +240,7 @@
   const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
   // ============================================================================
 
-  let chartDay, chartMes;
+  let chartCompare;
 
   function setStatus(txt){ document.getElementById("status").textContent = txt; }
   function setLastUpdate(d){
@@ -322,7 +308,10 @@
     let s = String(v).trim();
     if (!s) return null;
 
+    // % -> se conserva como 0-100
     s = s.replace("%","").trim();
+
+    // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
     s = s.replace(",", ".");
 
@@ -334,9 +323,8 @@
     return String(v ?? "").includes("%");
   }
 
+  // Badge simple (no compara con la otra columna; layouts independientes)
   function badgeForValue(val){
-    // Badge simple para que el KPI tenga "estado" sin comparar contra otra columna.
-    // Ajustalo si querés umbrales reales por KPI.
     if (val === null) return { text: "s/d", cls: "pill warn" };
     if (Math.abs(val) < 0.01) return { text: "OK", cls: "pill good" };
     return { text: "ver", cls: "pill warn" };
@@ -354,6 +342,7 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
+    // Detección robusta por nombre
     const hLower = headers.map(h => lower(h));
 
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
@@ -364,6 +353,7 @@
     let iDia   = idxDia   !== -1 ? idxDia   : 1;
     let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
 
+    // Resolver colisiones
     if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
     if (iMes === iIndic || iMes === iDia){
       const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
@@ -390,14 +380,13 @@
       })
       .filter(x => x.indicador);
 
-    if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
+    if (!items.length) throw new Error("No se pudieron construir items: revisá la columna del indicador.");
 
     return { items, dayLabel, mesLabel };
   }
 
-  function renderKPIsSingle(items, mode){
-    const gridId = mode === "day" ? "kpiGridDay" : "kpiGridMes";
-    const grid = document.getElementById(gridId);
+  function renderKPIs(items, mode){
+    const grid = document.getElementById(mode === "day" ? "kpiGridDay" : "kpiGridMes");
     grid.innerHTML = "";
 
     items.slice(0, 8).forEach(it => {
@@ -422,9 +411,8 @@
     });
   }
 
-  function renderTableSingle(items, mode){
-    const bodyId = mode === "day" ? "detailBodyDay" : "detailBodyMes";
-    const body = document.getElementById(bodyId);
+  function renderTable(items, mode){
+    const body = document.getElementById(mode === "day" ? "detailBodyDay" : "detailBodyMes");
     body.innerHTML = "";
 
     items.forEach(it => {
@@ -438,23 +426,23 @@
     });
   }
 
-  function renderChartSingle(items, mode, label){
-    const canvasId = mode === "day" ? "chartDay" : "chartMes";
+  function renderCompareChart(items, dayLabel, mesLabel){
     const slice = items.slice(0, 12);
-
     const labels = slice.map(x => x.indicador);
-    const series = slice.map(x => mode === "day" ? x.dia : x.mes);
+    const daySeries = slice.map(x => x.dia);
+    const mesSeries = slice.map(x => x.mes);
 
-    const ctx = document.getElementById(canvasId);
+    const ctx = document.getElementById("chartCompare");
+    if (chartCompare) chartCompare.destroy();
 
-    if (mode === "day" && chartDay) chartDay.destroy();
-    if (mode === "mes" && chartMes) chartMes.destroy();
-
-    const chart = new Chart(ctx, {
+    chartCompare = new Chart(ctx, {
       type: "bar",
       data: {
         labels,
-        datasets: [{ label, data: series }]
+        datasets: [
+          { label: dayLabel, data: daySeries },
+          { label: mesLabel, data: mesSeries }
+        ]
       },
       options: {
         responsive: true,
@@ -466,9 +454,6 @@
         }
       }
     });
-
-    if (mode === "day") chartDay = chart;
-    else chartMes = chart;
   }
 
   function setActiveLayout(mode){
@@ -495,15 +480,15 @@
       document.getElementById("thDayLabel").textContent = dayLabel;
       document.getElementById("thMesLabel").textContent = mesLabel;
 
-      // Render Día
-      renderKPIsSingle(items, "day");
-      renderTableSingle(items, "day");
-      renderChartSingle(items, "day", dayLabel);
+      // Layouts separados (sin cruce)
+      renderKPIs(items, "day");
+      renderTable(items, "day");
 
-      // Render Mes
-      renderKPIsSingle(items, "mes");
-      renderTableSingle(items, "mes");
-      renderChartSingle(items, "mes", mesLabel);
+      renderKPIs(items, "mes");
+      renderTable(items, "mes");
+
+      // Único gráfico comparativo
+      renderCompareChart(items, dayLabel, mesLabel);
 
       setStatus("ok");
       setLastUpdate(new Date());
@@ -550,395 +535,3 @@
 </script>
 </body>
 </html>
-    .kpi-grid {
-      display: grid; gap: 10px;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-    }
-    @media (max-width: 960px){ .kpi-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-
-    .kpi {
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--border);
-    }
-    .kpi .name { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-    .kpi .val { font-size: 22px; font-weight: 750; letter-spacing: .2px; }
-    .kpi .sub { margin-top: 6px; font-size: 12px; color: var(--muted); display:flex; justify-content: space-between; }
-
-    .pill { padding: 2px 8px; border-radius: 999px; font-weight: 650; border: 1px solid var(--border); }
-    .pill.good{ color: var(--good); }
-    .pill.warn{ color: var(--warn); }
-    .pill.bad{  color: var(--bad);  }
-
-    .row {
-      display: grid; gap: 14px;
-      grid-template-columns: 1fr 1fr;
-      margin-top: 14px;
-    }
-    @media (max-width: 960px){ .row{ grid-template-columns: 1fr; } }
-
-    canvas { width: 100% !important; height: 280px !important; }
-
-    table {
-      width: 100%; border-collapse: collapse; font-size: 12px;
-      overflow: hidden; border-radius: 12px; border: 1px solid var(--border);
-    }
-    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
-    th { text-align: left; color: #cfe0ff; background: rgba(255,255,255,.03); }
-    td { color: #eaf1ff; }
-    tr:last-child td { border-bottom: none; }
-    .right { text-align: right; }
-    .muted { color: var(--muted); }
-
-    .alert {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(255,255,255,.03);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    code { color: #cfe0ff; }
-  </style>
-</head>
-
-<body>
-<header>
-  <h1>Tablero KPI (Google Sheets)</h1>
-  <div class="meta">
-    <div>Estado: <span id="status" class="muted">iniciando…</span></div>
-    <div>Última actualización: <span id="lastUpdate" class="muted">—</span></div>
-    <div class="controls">
-      <label>Refresh (s)</label>
-      <input id="refreshSec" type="number" min="5" step="5" value="30" />
-      <button id="btnNow">Actualizar</button>
-    </div>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="card">
-    <h2>KPIs (Día vs Mes)</h2>
-    <div id="kpiGrid" class="kpi-grid"></div>
-    <div id="help" class="alert" style="display:none;"></div>
-  </div>
-
-  <div class="row">
-    <div class="card">
-      <h2>Comparativo Día vs Mes</h2>
-      <canvas id="barChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h2>Detalle</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Indicador</th>
-            <th id="thDay" class="right">Día</th>
-            <th id="thAcum" class="right">Mes</th>
-          </tr>
-        </thead>
-        <tbody id="detailBody"></tbody>
-      </table>
-      <div class="muted" style="margin-top:10px;font-size:12px;">
-        Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // ============================================================================
-  // CONFIG (TU PUBLICACIÓN)
-  // ============================================================================
-  const PUBLISHED_KEY = "2PACX-1vQ6GRrP2Qr38OV2puOeVMdHQz6-7Oy1zhHWGyx1p5woGJRa0FBws02pPIMUDhTEVMuKKrn3j32TF2xX";
-
-  // Si tu pestaña publicada NO es la primera, este gid puede ser distinto.
-  // Probá 0, luego 1, 2, etc.
-  const GID = 0;
-
-  // Endpoint CSV de sheets publicados (estable)
-  const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
-  // ============================================================================
-
-  let barChart;
-
-  function setStatus(txt){ document.getElementById("status").textContent = txt; }
-  function setLastUpdate(d){
-    document.getElementById("lastUpdate").textContent = d ? d.toLocaleString("es-AR") : "—";
-  }
-  function showHelp(html){
-    const el = document.getElementById("help");
-    el.style.display = "block";
-    el.innerHTML = html;
-  }
-  function hideHelp(){
-    const el = document.getElementById("help");
-    el.style.display = "none";
-    el.innerHTML = "";
-  }
-
-  // CSV parser (soporta comillas, comas, saltos)
-  function parseCSV(text){
-    const rows = [];
-    let row = [];
-    let cur = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++){
-      const c = text[i];
-      const next = text[i+1];
-
-      if (c === '"' ){
-        if (inQuotes && next === '"'){ // escape ""
-          cur += '"'; i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-        continue;
-      }
-
-      if (!inQuotes && (c === ',')){
-        row.push(cur); cur = "";
-        continue;
-      }
-
-      if (!inQuotes && (c === '\n' || c === '\r')){
-        if (c === '\r' && next === '\n') i++; // CRLF
-        row.push(cur);
-        rows.push(row);
-        row = [];
-        cur = "";
-        continue;
-      }
-
-      cur += c;
-    }
-
-    // último campo
-    if (cur.length || row.length){
-      row.push(cur);
-      rows.push(row);
-    }
-
-    // limpiar filas vacías
-    return rows.filter(r => r.some(x => String(x).trim() !== ""));
-  }
-
-  function norm(s){ return String(s ?? "").trim(); }
-  function lower(s){ return norm(s).toLowerCase(); }
-
-  function toNumber(v){
-    if (v === null || v === undefined) return null;
-    let s = String(v).trim();
-    if (!s) return null;
-
-    // % -> se conserva como 0-100
-    s = s.replace("%","").trim();
-
-    // 1.234,56 -> 1234.56
-    s = s.replace(/\./g, "");
-    s = s.replace(",", ".");
-
-    const n = Number(s);
-    return Number.isNaN(n) ? null : n;
-  }
-
-  function isPercentLike(v){
-    return String(v ?? "").includes("%");
-  }
-
-  function deltaBadge(day, mes){
-    if (day === null || mes === null) return { text: "s/d", cls: "pill warn" };
-    const d = day - mes;
-    const abs = Math.abs(d);
-    if (abs < 0.01) return { text: "OK", cls: "pill good" };
-    if (abs <= 2)   return { text: (d>0?"+":"") + d.toFixed(2), cls: "pill warn" };
-    return { text: (d>0?"+":"") + d.toFixed(2), cls: "pill bad" };
-  }
-
-  async function fetchItems(){
-    setStatus("consultando…");
-    const res = await fetch(CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
-
-    const csv = await res.text();
-    const table = parseCSV(csv);
-    if (table.length < 2) throw new Error("El CSV no trae datos (hoja vacía o rango publicado sin contenido).");
-
-    const headers = table[0].map(norm);
-    const dataRows = table.slice(1);
-
-    // Debug: ver headers reales publicados
-    // console.log("HEADERS CSV:", headers);
-
-    // Detección robusta por nombre:
-    // - Indicador: "indic" o 1ra columna
-    // - Día: "día"/"dia"/"diario" o 2da columna
-    // - Mes/Acumulado: "mes"/"mensual"/"acum"/"acumulado" o 3ra columna
-    const hLower = headers.map(h => lower(h));
-
-    const idxIndic = hLower.findIndex(h => h.includes("indic"));
-    const idxDia   = hLower.findIndex(h => h.includes("día") || h.includes("dia") || h.includes("diario"));
-    const idxMes   = hLower.findIndex(h => h.includes("mes") || h.includes("mensual") || h.includes("acum") || h.includes("acumul"));
-
-    let iIndic = idxIndic !== -1 ? idxIndic : 0;
-    let iDia   = idxDia   !== -1 ? idxDia   : 1;
-    let iAcum  = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
-
-    // Resolver colisiones (índices repetidos)
-    if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
-
-    if (iAcum === iIndic || iAcum === iDia){
-      const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
-      iAcum = candidates[0] ?? iAcum;
-    }
-
-    const dayLabel  = headers[iDia]  || "Día";
-    const acumLabel = headers[iAcum] || "Mes";
-
-    document.getElementById("thDay").textContent  = dayLabel;
-    document.getElementById("thAcum").textContent = acumLabel;
-
-    const items = dataRows
-      .map(r => {
-        const indicador = norm(r[iIndic]);
-        const diaRaw  = norm(r[iDia]);
-        const acumRaw = norm(r[iAcum]);
-        return {
-          indicador,
-          diaRaw,
-          acumRaw,
-          dia:  toNumber(diaRaw),
-          acum: toNumber(acumRaw),
-          pct:  isPercentLike(diaRaw) || isPercentLike(acumRaw)
-        };
-      })
-      .filter(x => x.indicador);
-
-    if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
-
-    return items;
-  }
-
-  function renderKPIs(items){
-    const kpiGrid = document.getElementById("kpiGrid");
-    kpiGrid.innerHTML = "";
-
-    items.slice(0, 8).forEach(it => {
-      const badge = deltaBadge(it.dia, it.acum);
-      const valText  = it.diaRaw  === "" ? "—" : (it.pct ? `${it.dia ?? "—"}%`  : it.diaRaw);
-      const acumText = it.acumRaw === "" ? "—" : (it.pct ? `${it.acum ?? "—"}%` : it.acumRaw);
-
-      const div = document.createElement("div");
-      div.className = "kpi";
-      div.innerHTML = `
-        <div class="name">${it.indicador}</div>
-        <div class="val">${valText}</div>
-        <div class="sub">
-          <span class="muted">Mes: ${acumText}</span>
-          <span class="${badge.cls}">${badge.text}</span>
-        </div>
-      `;
-      kpiGrid.appendChild(div);
-    });
-  }
-
-  function renderTable(items){
-    const body = document.getElementById("detailBody");
-    body.innerHTML = "";
-    items.forEach(it => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.indicador}</td>
-        <td class="right">${it.diaRaw === "" ? "—" : it.diaRaw}</td>
-        <td class="right">${it.acumRaw === "" ? "—" : it.acumRaw}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  function renderChart(items){
-    const slice = items.slice(0, 12);
-    const labels = slice.map(x => x.indicador);
-    const daySeries  = slice.map(x => x.dia);
-    const acumSeries = slice.map(x => x.acum);
-
-    const ctx = document.getElementById("barChart");
-    if (barChart) barChart.destroy();
-
-    barChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          { label: document.getElementById("thDay").textContent, data: daySeries },
-          { label: document.getElementById("thAcum").textContent, data: acumSeries }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: "#eaf1ff" } }
-        },
-        scales: {
-          x: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } },
-          y: { ticks: { color: "#8fa3c0" }, grid: { color: "rgba(255,255,255,.06)" } }
-        }
-      }
-    });
-  }
-
-  async function refresh(){
-    try{
-      hideHelp();
-      const items = await fetchItems();
-      renderKPIs(items);
-      renderTable(items);
-      renderChart(items);
-      setStatus("ok");
-      setLastUpdate(new Date());
-    }catch(err){
-      console.error(err);
-      setStatus("error: " + err.message);
-
-      const isFile = location.protocol === "file:";
-      showHelp(`
-        <div><strong>Checklist rápido</strong></div>
-        <ol style="margin:8px 0 0 18px;padding:0;">
-          <li>Si abriste el archivo como <code>file:///</code>, servilo por HTTP. Ejemplos:</li>
-        </ol>
-        <div style="margin-left:18px;">
-          <div>• VSCode → extensión “Live Server”</div>
-          <div>• o en una carpeta: <code>python -m http.server 8000</code> y abrís <code>http://localhost:8000</code></div>
-        </div>
-        <div style="margin-top:10px;">
-          <div>2) Si sigue sin traer datos, probá cambiar <code>GID</code> (0, 1, 2…). El gid puede variar según la pestaña publicada.</div>
-        </div>
-        ${isFile ? `<div style="margin-top:10px;">Detecté que estás en <code>file:///</code>. Eso suele bloquear <code>fetch()</code>.</div>` : ``}
-      `);
-    }
-  }
-
-  // Auto refresh
-  let timer;
-  function startTimer(){
-    if (timer) clearInterval(timer);
-    const sec = Math.max(5, Number(document.getElementById("refreshSec").value) || 30);
-    timer = setInterval(refresh, sec * 1000);
-  }
-
-  document.getElementById("btnNow").addEventListener("click", () => refresh());
-  document.getElementById("refreshSec").addEventListener("change", () => startTimer());
-
-  refresh();
-  startTimer();
-</script>
-</body>
-</html>
-
