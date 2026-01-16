@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día / Mes + gráfico único)</title>
+  <title>Tablero KPI - Google Sheets (Día / Mes)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --bg:#0b1220;
-      --muted:#8fa3c0;
-      --text:#eaf1ff;
-      --border:rgba(255,255,255,.08);
-      --good:#29d391;
-      --warn:#ffd166;
-      --bad:#ff5c7a;
+    :root {
+      --bg: #0b1220;
+      --muted: #8fa3c0;
+      --text: #eaf1ff;
+      --border: rgba(255,255,255,.08);
+      --good: #29d391;
+      --warn: #ffd166;
+      --bad:  #ff5c7a;
     }
-    *{ box-sizing:border-box; }
+    * { box-sizing: border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -26,23 +26,20 @@
     }
 
     header{
-      padding:18px 22px;
+      padding: 18px 22px;
       display:flex; align-items: baseline; justify-content: space-between; gap: 12px;
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(8px);
       position: sticky; top: 0;
       background: rgba(11,18,32,.55);
-      z-index: 10;
+      z-index: 5;
     }
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
 
-    .meta{
-      color: var(--muted);
-      font-size:12px;
-      display:flex; gap:16px; flex-wrap: wrap; align-items:center;
-    }
+    .meta{ color: var(--muted); font-size: 12px; display:flex; gap: 16px; flex-wrap: wrap; align-items:center; }
     .controls{ display:flex; gap:10px; align-items:center; }
     .controls label{ font-size:12px; color: var(--muted); }
+
     input[type="number"]{
       width:110px;
       background: rgba(255,255,255,.04);
@@ -65,7 +62,9 @@
 
     .wrap{ padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
 
-    .tabs{ display:flex; gap:10px; align-items:center; }
+    .tabs{
+      display:flex; gap:10px; align-items:center;
+    }
     .tab{
       border: 1px solid var(--border);
       background: rgba(255,255,255,.04);
@@ -123,7 +122,7 @@
       .row{ grid-template-columns: 1fr; }
     }
 
-    canvas{ width:100% !important; height: 320px !important; }
+    canvas{ width:100% !important; height: 280px !important; }
 
     table{
       width:100%;
@@ -160,10 +159,10 @@
 <body>
 <header>
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;">
-    <h1>Tablero KPI - Transporte San José S.A (Tráfico PRA)</h1>
+    <h1>Tablero KPI (Google Sheets)</h1>
     <div class="tabs" role="tablist" aria-label="Cambiar vista">
-      <div class="tab active" id="tabDay" role="tab" aria-selected="true">Día</div>
-      <div class="tab" id="tabMes" role="tab" aria-selected="false">Mes</div>
+      <div class="tab active" id="tabDay"  role="tab" aria-selected="true">Día</div>
+      <div class="tab"        id="tabMes"  role="tab" aria-selected="false">Mes</div>
     </div>
   </div>
 
@@ -180,55 +179,70 @@
 
 <div class="wrap">
 
-  <!-- ÚNICO GRÁFICO COMPARATIVO (SIEMPRE VISIBLE) -->
-  <div class="card">
-    <h2>Comparativo (Día vs Mes)</h2>
-    <canvas id="chartCompare"></canvas>
-    <div class="muted" style="margin-top:10px;font-size:12px;">
-      Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-    </div>
-  </div>
-
-  <!-- LAYOUTS SEPARADOS (SIN GRÁFICO) -->
-  <div class="row">
-    <!-- DIA -->
-    <section id="layoutDay" class="card layout active">
+  <!-- ===================== LAYOUT DIA ===================== -->
+  <section id="layoutDay" class="layout active">
+    <div class="card">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
-
-      <h2 style="margin-top:14px;">Detalle (Día)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Indicador</th>
-            <th class="right" id="thDayLabel">Día</th>
-          </tr>
-        </thead>
-        <tbody id="detailBodyDay"></tbody>
-      </table>
-
       <div id="helpDay" class="alert" style="display:none;"></div>
-    </section>
+    </div>
 
-    <!-- MES -->
-    <section id="layoutMes" class="card layout">
+    <div class="row">
+      <div class="card">
+        <h2>Top indicadores (Día)</h2>
+        <canvas id="chartDay"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>Detalle (Día)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th class="right" id="thDayLabel">Día</th>
+            </tr>
+          </thead>
+          <tbody id="detailBodyDay"></tbody>
+        </table>
+        <div class="muted" style="margin-top:10px;font-size:12px;">
+          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LAYOUT MES ===================== -->
+  <section id="layoutMes" class="layout">
+    <div class="card">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
-
-      <h2 style="margin-top:14px;">Detalle (Mes)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Indicador</th>
-            <th class="right" id="thMesLabel">Mes</th>
-          </tr>
-        </thead>
-        <tbody id="detailBodyMes"></tbody>
-      </table>
-
       <div id="helpMes" class="alert" style="display:none;"></div>
-    </section>
-  </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>Top indicadores (Mes)</h2>
+        <canvas id="chartMes"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>Detalle (Mes)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th class="right" id="thMesLabel">Mes</th>
+            </tr>
+          </thead>
+          <tbody id="detailBodyMes"></tbody>
+        </table>
+        <div class="muted" style="margin-top:10px;font-size:12px;">
+          Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -240,7 +254,7 @@
   const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=${GID}`;
   // ============================================================================
 
-  let chartCompare;
+  let chartDay, chartMes;
 
   function setStatus(txt){ document.getElementById("status").textContent = txt; }
   function setLastUpdate(d){
@@ -308,10 +322,7 @@
     let s = String(v).trim();
     if (!s) return null;
 
-    // % -> se conserva como 0-100
     s = s.replace("%","").trim();
-
-    // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
     s = s.replace(",", ".");
 
@@ -323,7 +334,6 @@
     return String(v ?? "").includes("%");
   }
 
-  // Badge simple (no compara con la otra columna; layouts independientes)
   function badgeForValue(val){
     if (val === null) return { text: "s/d", cls: "pill warn" };
     if (Math.abs(val) < 0.01) return { text: "OK", cls: "pill good" };
@@ -342,7 +352,6 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
-    // Detección robusta por nombre
     const hLower = headers.map(h => lower(h));
 
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
@@ -353,7 +362,6 @@
     let iDia   = idxDia   !== -1 ? idxDia   : 1;
     let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
 
-    // Resolver colisiones
     if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
     if (iMes === iIndic || iMes === iDia){
       const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
@@ -380,13 +388,14 @@
       })
       .filter(x => x.indicador);
 
-    if (!items.length) throw new Error("No se pudieron construir items: revisá la columna del indicador.");
+    if (!items.length) throw new Error("No se pudieron construir items: revisá que la primera columna sea el nombre del indicador.");
 
     return { items, dayLabel, mesLabel };
   }
 
-  function renderKPIs(items, mode){
-    const grid = document.getElementById(mode === "day" ? "kpiGridDay" : "kpiGridMes");
+  function renderKPIsSingle(items, mode){
+    const gridId = mode === "day" ? "kpiGridDay" : "kpiGridMes";
+    const grid = document.getElementById(gridId);
     grid.innerHTML = "";
 
     items.slice(0, 8).forEach(it => {
@@ -411,8 +420,9 @@
     });
   }
 
-  function renderTable(items, mode){
-    const body = document.getElementById(mode === "day" ? "detailBodyDay" : "detailBodyMes");
+  function renderTableSingle(items, mode){
+    const bodyId = mode === "day" ? "detailBodyDay" : "detailBodyMes";
+    const body = document.getElementById(bodyId);
     body.innerHTML = "";
 
     items.forEach(it => {
@@ -426,23 +436,23 @@
     });
   }
 
-  function renderCompareChart(items, dayLabel, mesLabel){
+  function renderChartSingle(items, mode, label){
+    const canvasId = mode === "day" ? "chartDay" : "chartMes";
     const slice = items.slice(0, 12);
+
     const labels = slice.map(x => x.indicador);
-    const daySeries = slice.map(x => x.dia);
-    const mesSeries = slice.map(x => x.mes);
+    const series = slice.map(x => mode === "day" ? x.dia : x.mes);
 
-    const ctx = document.getElementById("chartCompare");
-    if (chartCompare) chartCompare.destroy();
+    const ctx = document.getElementById(canvasId);
 
-    chartCompare = new Chart(ctx, {
+    if (mode === "day" && chartDay) chartDay.destroy();
+    if (mode === "mes" && chartMes) chartMes.destroy();
+
+    const chart = new Chart(ctx, {
       type: "bar",
       data: {
         labels,
-        datasets: [
-          { label: dayLabel, data: daySeries },
-          { label: mesLabel, data: mesSeries }
-        ]
+        datasets: [{ label, data: series }]
       },
       options: {
         responsive: true,
@@ -454,6 +464,9 @@
         }
       }
     });
+
+    if (mode === "day") chartDay = chart;
+    else chartMes = chart;
   }
 
   function setActiveLayout(mode){
@@ -476,19 +489,16 @@
 
       const { items, dayLabel, mesLabel } = await fetchData();
 
-      // Labels en tablas
       document.getElementById("thDayLabel").textContent = dayLabel;
       document.getElementById("thMesLabel").textContent = mesLabel;
 
-      // Layouts separados (sin cruce)
-      renderKPIs(items, "day");
-      renderTable(items, "day");
+      renderKPIsSingle(items, "day");
+      renderTableSingle(items, "day");
+      renderChartSingle(items, "day", dayLabel);
 
-      renderKPIs(items, "mes");
-      renderTable(items, "mes");
-
-      // Único gráfico comparativo
-      renderCompareChart(items, dayLabel, mesLabel);
+      renderKPIsSingle(items, "mes");
+      renderTableSingle(items, "mes");
+      renderChartSingle(items, "mes", mesLabel);
 
       setStatus("ok");
       setLastUpdate(new Date());
@@ -516,7 +526,6 @@
     }
   }
 
-  // Auto refresh
   let timer;
   function startTimer(){
     if (timer) clearInterval(timer);
