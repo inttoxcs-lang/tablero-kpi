@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día / Mes + gráfico único)</title>
+  <title>Tablero KPI - Google Sheets (Día + Mes en un layout + comparativo)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
@@ -65,32 +65,13 @@
     }
     button:hover{ background: rgba(255,255,255,.09); }
 
-    /* Focus visible (teclado) */
     button:focus-visible,
-    input:focus-visible,
-    .tab:focus-visible{
+    input:focus-visible{
       outline: 2px solid var(--focus);
       outline-offset: 2px;
     }
 
     .wrap{ padding: 18px 22px 28px; max-width: 1200px; margin: 0 auto; }
-
-    .tabs{ display:flex; gap:10px; align-items:center; }
-    .tab{
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      padding: 8px 12px;
-      border-radius: 999px;
-      cursor:pointer;
-      font-weight: 700;
-      font-size: 12px;
-      color: var(--muted);
-      user-select:none;
-    }
-    .tab.active{
-      color: var(--text);
-      background: rgba(255,255,255,.08);
-    }
 
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
@@ -161,9 +142,6 @@
       font-size: 12px;
       line-height: 1.35;
     }
-
-    .layout{ display:none; }
-    .layout.active{ display:block; }
     code{ color:#cfe0ff; }
   </style>
 </head>
@@ -172,26 +150,6 @@
 <header>
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;">
     <h1>Tablero KPI - Transporte San José S.A (Tráfico PRA)</h1>
-
-    <div class="tabs" role="tablist" aria-label="Cambiar vista">
-      <button
-        class="tab active"
-        id="tabDay"
-        type="button"
-        role="tab"
-        aria-selected="true"
-        aria-controls="layoutDay"
-      >Día</button>
-
-      <button
-        class="tab"
-        id="tabMes"
-        type="button"
-        role="tab"
-        aria-selected="false"
-        aria-controls="layoutMes"
-      >Mes</button>
-    </div>
   </div>
 
   <div class="meta">
@@ -207,23 +165,19 @@
 
 <div class="wrap">
 
-  <!-- ÚNICO GRÁFICO COMPARATIVO (SIEMPRE VISIBLE) -->
+  <!-- ÚNICO GRÁFICO COMPARATIVO -->
   <div class="card">
     <h2>Comparativo (Día vs Mes)</h2>
     <canvas id="chartCompare"></canvas>
-
-    <!-- Mensajes del gráfico (cuando no hay datos o falla fetch) -->
     <div id="chartMsg" class="alert" style="display:none;margin-top:10px;"></div>
-
     <div class="muted" style="margin-top:10px;font-size:12px;">
       Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
     </div>
   </div>
 
-  <!-- LAYOUTS SEPARADOS (SIN GRÁFICO) -->
   <div class="row">
-    <!-- DIA -->
-    <section id="layoutDay" class="card layout active" role="tabpanel" aria-labelledby="tabDay">
+    <!-- KPIs Día -->
+    <section class="card">
       <h2>KPIs (Día)</h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
 
@@ -241,8 +195,8 @@
       <div id="helpDay" class="alert" style="display:none;"></div>
     </section>
 
-    <!-- MES -->
-    <section id="layoutMes" class="card layout" role="tabpanel" aria-labelledby="tabMes">
+    <!-- KPIs Mes -->
+    <section class="card">
       <h2>KPIs (Mes)</h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
 
@@ -365,7 +319,6 @@
     return String(v ?? "").includes("%");
   }
 
-  // Badge simple (no compara con la otra columna; layouts independientes)
   function badgeForValue(val){
     if (val === null) return { text: "s/d", cls: "pill warn" };
     if (Math.abs(val) < 0.01) return { text: "OK", cls: "pill good" };
@@ -385,7 +338,6 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
-    // Detección por nombre
     const hLower = headers.map(h => lower(h));
 
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
@@ -396,7 +348,6 @@
     let iDia   = idxDia   !== -1 ? idxDia   : 1;
     let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
 
-    // Resolver colisiones
     if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
     if (iMes === iIndic || iMes === iDia){
       const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
@@ -470,7 +421,6 @@
   }
 
   function renderCompareChart(items, dayLabel, mesLabel){
-    // Tomamos los primeros 12, pero solo graficamos los que aporten números
     const slice = items.slice(0, 12);
 
     const labels = [];
@@ -481,7 +431,6 @@
       const d = Number.isFinite(x.dia) ? x.dia : null;
       const m = Number.isFinite(x.mes) ? x.mes : null;
 
-      // Si ambos son null, no aporta al gráfico
       if (d === null && m === null) continue;
 
       labels.push(x.indicador);
@@ -489,7 +438,6 @@
       mesSeries.push(m);
     }
 
-    // Si no quedó nada graficable, destruir chart y avisar
     if (!labels.length){
       if (chartCompare) { chartCompare.destroy(); chartCompare = null; }
       showChartMsg("No hay valores numéricos suficientes para graficar (revisá que Día/Mes sean números o porcentajes).");
@@ -498,9 +446,7 @@
 
     hideChartMsg();
 
-    const canvas = document.getElementById("chartCompare");
-    const ctx = canvas.getContext("2d");
-
+    const ctx = document.getElementById("chartCompare").getContext("2d");
     if (chartCompare) chartCompare.destroy();
 
     chartCompare = new Chart(ctx, {
@@ -520,10 +466,7 @@
           legend: { labels: { color: "#eaf1ff" } },
           tooltip: {
             callbacks: {
-              label: (c) => {
-                const v = c.raw;
-                return `${c.dataset.label}: ${v === null ? "—" : v}`;
-              }
+              label: (c) => `${c.dataset.label}: ${c.raw === null ? "—" : c.raw}`
             }
           }
         },
@@ -535,31 +478,6 @@
     });
   }
 
-  function setActiveLayout(mode){
-    const isDay = mode === "day";
-
-    document.getElementById("layoutDay").classList.toggle("active", isDay);
-    document.getElementById("layoutMes").classList.toggle("active", !isDay);
-
-    document.getElementById("tabDay").classList.toggle("active", isDay);
-    document.getElementById("tabMes").classList.toggle("active", !isDay);
-
-    document.getElementById("tabDay").setAttribute("aria-selected", String(isDay));
-    document.getElementById("tabMes").setAttribute("aria-selected", String(!isDay));
-  }
-
-  // Opcional: hacer que el tab afecte el gráfico (resalta ocultando el otro dataset)
-  function setChartFocus(mode){
-    if (!chartCompare) return;
-    const focusDay = mode === "day";
-
-    // ocultar el no seleccionado (comportamiento “esperable” para usuario final)
-    chartCompare.data.datasets[0].hidden = !focusDay;
-    chartCompare.data.datasets[1].hidden = focusDay;
-
-    chartCompare.update();
-  }
-
   async function refresh(){
     try{
       hideHelp("day");
@@ -568,26 +486,19 @@
 
       const { items, dayLabel, mesLabel } = await fetchData();
 
-      // Labels en tablas
       document.getElementById("thDayLabel").textContent = dayLabel;
       document.getElementById("thMesLabel").textContent = mesLabel;
 
-      // Layouts separados (sin cruce)
       renderKPIs(items, "day");
       renderTable(items, "day");
 
       renderKPIs(items, "mes");
       renderTable(items, "mes");
 
-      // Único gráfico comparativo
       renderCompareChart(items, dayLabel, mesLabel);
 
       setStatus("ok");
       setLastUpdate(new Date());
-
-      // Mantener foco del gráfico acorde al tab activo
-      const isDayActive = document.getElementById("tabDay").classList.contains("active");
-      setChartFocus(isDayActive ? "day" : "mes");
     } catch (err){
       console.error(err);
       setStatus("error: " + err.message);
@@ -624,16 +535,6 @@
 
   document.getElementById("btnNow").addEventListener("click", () => refresh());
   document.getElementById("refreshSec").addEventListener("change", () => startTimer());
-
-  document.getElementById("tabDay").addEventListener("click", () => {
-    setActiveLayout("day");
-    setChartFocus("day");
-  });
-
-  document.getElementById("tabMes").addEventListener("click", () => {
-    setActiveLayout("mes");
-    setChartFocus("mes");
-  });
 
   refresh();
   startTimer();
