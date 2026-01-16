@@ -161,23 +161,21 @@
     td.right{ text-align:right; }
     tr:last-child td{ border-bottom:none; }
 
-    /* ===========================
-       GIF CENTRADO (OVERLAY)
-       =========================== */
+    /* GIF CENTRADO */
     #gifCenter{
       position: fixed;
       inset: 0;
-      display: none;               /* default oculto */
+      display: flex;              /* visible SIEMPRE (modo prueba) */
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      pointer-events: none;        /* no bloquea clicks */
+      pointer-events: none;
     }
     #gifCenter img{
       max-width: 420px;
       width: 35vw;
       min-width: 220px;
-      opacity: 0.9;
+      opacity: 0.92;
       border-radius: 12px;
       box-shadow: 0 18px 50px rgba(0,0,0,.55);
     }
@@ -195,7 +193,6 @@
 
 <div class="wrap">
 
-  <!-- KPIs Día / Mes -->
   <div class="grid2">
     <div class="card">
       <h2>KPIs del Día <span class="subtitle">Día</span></h2>
@@ -231,9 +228,9 @@
 
 </div>
 
-<!-- GIF central (poner 200.gif en la misma carpeta que este HTML) -->
+<!-- GIF (en la MISMA carpeta que index.html) -->
 <div id="gifCenter">
-  <img src="200.gif" alt="GIF centrado">
+  <img src="./200.gif" alt="GIF centrado">
 </div>
 
 <script>
@@ -253,15 +250,7 @@ function toNumber(v){
   if(v===undefined || v===null) return null;
   let s=String(v).trim();
   if(!s) return null;
-
-  // Si viene con %
-  if(s.includes("%")){
-    s=s.replace("%","").trim();
-  }
-
-  // Normalización:
-  // - Si viene "0,65" -> "0.65"
-  // - Si viene "2.875.000,00" -> quitamos puntos de miles y reemplazamos coma por punto
+  if(s.includes("%")) s=s.replace("%","").trim();
   s = s.replace(/\./g,"").replace(",",".");
   const n=Number(s);
   return Number.isNaN(n)?null:n;
@@ -283,7 +272,7 @@ function format(v){
 
 function status(ind,val){
   let r=RULES.find(x=>x.match.test(ind));
-  if(!r || val===null) return "warn";
+  if(!r||val===null) return "warn";
   if(r.type==="min"){
     if(val>=r.green) return "good";
     if(val>=r.yellow) return "warn";
@@ -316,9 +305,7 @@ function ensureChart(labels, dayData, monData){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: "#cfe0ff" } }
-      },
+      plugins: { legend: { labels: { color: "#cfe0ff" } } },
       scales: {
         x: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } },
         y: { ticks: { color: "#cfe0ff" }, grid: { color: "rgba(255,255,255,.06)" } }
@@ -327,75 +314,62 @@ function ensureChart(labels, dayData, monData){
   });
 }
 
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  return lines.map(line => line.split(","));
+}
+
 async function refresh(){
   try{
-    // Cache-busting
     const res=await fetch(CSV_URL+"&_="+Date.now());
-    const csv = (await res.text()).trim();
-    const rows = csv.split("\n").map(r => r.split(","));
+    const csv = await res.text();
 
-    // Espera columnas: Indicador, Dia, Mes
+    const rows = parseCSV(csv);
     const data = rows.slice(1).map(r => ({
-      ind: r[0],
-      day: r[1],
-      mon: r[2],
+      ind: (r[0] ?? "").trim(),
+      day: r[1] ?? "",
+      mon: r[2] ?? "",
       d: toNumber(r[1]),
       m: toNumber(r[2])
-    })).filter(x => x.ind && x.ind.trim().length);
+    })).filter(x => x.ind.length);
 
     document.getElementById("kpiDay").innerHTML="";
     document.getElementById("kpiMonth").innerHTML="";
     document.getElementById("detailBody").innerHTML="";
 
-    // Para estado global + GIF
-    let allGood = true;
-
     data.forEach(it=>{
-      // Día
       const sd = status(it.ind, it.d);
-      if(sd !== "good") allGood = false;
-
       const divD=document.createElement("div");
       divD.className="kpi";
-      divD.style.borderColor= sd==="good" ? "var(--goodB)" : sd==="bad" ? "var(--badB)" : "var(--warnB)";
+      divD.style.borderColor= sd==="good"? "var(--goodB)":sd==="bad"?"var(--badB)":"var(--warnB)";
       divD.innerHTML=`
         <div class="name">${it.ind}</div>
         <div class="val">${format(it.day)}</div>
         <div class="sub"><span class="pill ${sd}">${sd==="good"?"OK":sd==="bad"?"Crítico":"Atención"}</span></div>`;
       document.getElementById("kpiDay").appendChild(divD);
 
-      // Mes
       const sm = status(it.ind, it.m);
-      if(sm !== "good") allGood = false;
-
       const divM=document.createElement("div");
       divM.className="kpi";
-      divM.style.borderColor= sm==="good" ? "var(--goodB)" : sm==="bad" ? "var(--badB)" : "var(--warnB)";
+      divM.style.borderColor= sm==="good"? "var(--goodB)":sm==="bad"?"var(--badB)":"var(--warnB)";
       divM.innerHTML=`
         <div class="name">${it.ind}</div>
         <div class="val">${format(it.mon)}</div>
         <div class="sub"><span class="pill ${sm}">${sm==="good"?"OK":sm==="bad"?"Crítico":"Atención"}</span></div>`;
       document.getElementById("kpiMonth").appendChild(divM);
 
-      // Tabla detalle
       document.getElementById("detailBody").innerHTML +=
         `<tr><td>${it.ind}</td><td class="right">${format(it.day)}</td><td class="right">${format(it.mon)}</td></tr>`;
     });
 
-    // Chart
     ensureChart(
       data.map(x=>x.ind),
       data.map(x=>(x.d ?? 0)),
       data.map(x=>(x.m ?? 0))
     );
 
-    // Estado + fecha
-    document.getElementById("status").textContent = allGood ? "OK" : "ATENCIÓN";
-    document.getElementById("lastUpdate").textContent = new Date().toLocaleString("es-AR");
-
-    // Mostrar GIF solo si todo está OK
-    const gif = document.getElementById("gifCenter");
-    gif.style.display = allGood ? "flex" : "none";
+    document.getElementById("status").textContent="OK";
+    document.getElementById("lastUpdate").textContent=new Date().toLocaleString("es-AR");
 
   }catch(e){
     document.getElementById("status").textContent="ERROR";
