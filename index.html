@@ -98,7 +98,7 @@
     }
     .kpi .name{ font-size:12px; color: var(--muted); margin-bottom: 8px; }
     .kpi .val{ font-size:22px; font-weight:750; letter-spacing:.2px; }
-    .kpi .sub{ margin-top:6px; font-size:12px; color: var(--muted); display:flex; justify-content: space-between; }
+    .kpi .sub{ margin-top:6px; font-size:12px; color: var(--muted); display:flex; justify-content: flex-end; }
 
     .pill{ padding:2px 8px; border-radius: 999px; font-weight:650; border: 1px solid var(--border); }
     .pill.good{ color: var(--good); }
@@ -108,11 +108,13 @@
     .row{
       display:grid; gap:14px;
       grid-template-columns: 1fr 1fr;
-      margin-top: 14px;
+      margin-top: 0; /* sube el contenido principal */
     }
     @media (max-width: 960px){
       .row{ grid-template-columns: 1fr; }
     }
+
+    .chart-block{ margin-top: 14px; } /* comparativo abajo */
 
     canvas{ width:100% !important; height: 320px !important; }
 
@@ -166,16 +168,7 @@
 
 <div class="wrap">
 
-  <!-- ÚNICO GRÁFICO COMPARATIVO -->
-  <div class="card">
-    <h2>Comparativo (Día vs Mes)</h2>
-    <canvas id="chartCompare"></canvas>
-    <div id="chartMsg" class="alert" style="display:none;margin-top:10px;"></div>
-    <div class="muted" style="margin-top:10px;font-size:12px;">
-      Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
-    </div>
-  </div>
-
+  <!-- PRIMERO: LAYOUT DÍA + MES -->
   <div class="row">
     <!-- KPIs Día -->
     <section class="card">
@@ -215,6 +208,17 @@
       <div id="helpMes" class="alert" style="display:none;"></div>
     </section>
   </div>
+
+  <!-- DESPUÉS: COMPARATIVO ABAJO -->
+  <div class="card chart-block">
+    <h2>Comparativo (Día vs Mes)</h2>
+    <canvas id="chartCompare"></canvas>
+    <div id="chartMsg" class="alert" style="display:none;margin-top:10px;"></div>
+    <div class="muted" style="margin-top:10px;font-size:12px;">
+      Fuente: Google Sheets (publicado). Se reconsulta en cada refresh.
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -398,7 +402,6 @@
         <div class="name">${it.indicador}</div>
         <div class="val">${valText}</div>
         <div class="sub">
-          <span class="muted">${mode === "day" ? "Vista Día" : "Vista Mes"}</span>
           <span class="${badge.cls}">${badge.text}</span>
         </div>
       `;
