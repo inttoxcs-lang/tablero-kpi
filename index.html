@@ -9,23 +9,23 @@
 
   <style>
     :root{
-      /* Background (verde + acento magenta como la imagen) */
-      --bg-green-main: #0b7f2a;
-      --bg-green-dark: #064d1a;
-      --bg-green-bright: #0ea34a;
-      --bg-accent-pink: #ff5aa5;
+      /* Dark theme (negros) */
+      --bg0:#07090d;
+      --bg1:#0b0f16;
+      --bg2:#0f1520;
 
-      /* UI */
+      --card: rgba(255,255,255,.03);
+      --card2: rgba(255,255,255,.02);
+      --border: rgba(255,255,255,.10);
+
       --text:#eaf1ff;
-      --muted: rgba(234,241,255,.72);
-      --border: rgba(255,255,255,.12);
+      --muted: rgba(234,241,255,.70);
 
-      /* Status */
       --good:#2cff9a;
       --warn:#ffd166;
       --bad:#ff6b81;
 
-      --focus: rgba(234,241,255,.7);
+      --focus: rgba(234,241,255,.65);
     }
 
     *{ box-sizing:border-box; }
@@ -34,22 +34,12 @@
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: var(--text);
-
-      /* Fondo verde con glow magenta superior (similar a tu referencia) */
-      background:
-        radial-gradient(
-          600px 300px at 50% 0%,
-          rgba(255,90,165,.55) 0%,
-          rgba(255,90,165,.15) 35%,
-          rgba(255,90,165,0) 60%
-        ),
-        linear-gradient(
-          180deg,
-          var(--bg-green-bright) 0%,
-          var(--bg-green-main) 45%,
-          var(--bg-green-dark) 100%
-        );
       min-height: 100vh;
+
+      background:
+        radial-gradient(900px 600px at 20% 0%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 60%),
+        radial-gradient(700px 500px at 80% 10%, rgba(255,255,255,.04) 0%, rgba(255,255,255,0) 55%),
+        linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 45%, var(--bg0) 100%);
     }
 
     header{
@@ -63,9 +53,9 @@
       top:0;
       z-index:10;
 
-      background: rgba(6,77,26,.55);
+      background: rgba(8,10,14,.65);
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,.18);
+      border-bottom: 1px solid rgba(255,255,255,.12);
     }
 
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
@@ -88,7 +78,7 @@
       padding:8px 10px;
       border-radius:10px;
       border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
+      background: rgba(255,255,255,.03);
       color: var(--text);
       outline:none;
     }
@@ -97,12 +87,12 @@
       padding:8px 10px;
       border-radius:10px;
       border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
+      background: rgba(255,255,255,.04);
       color: var(--text);
       cursor:pointer;
       font-weight:650;
     }
-    button:hover{ background: rgba(0,0,0,.25); }
+    button:hover{ background: rgba(255,255,255,.06); }
 
     button:focus-visible,
     input:focus-visible{
@@ -122,17 +112,27 @@
     }
 
     .card{
-      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.34));
-      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 10px 28px rgba(0,0,0,.30);
+      box-shadow: 0 10px 28px rgba(0,0,0,.40);
     }
     .card h2{
       margin:0 0 12px;
       font-size:14px;
       color: rgba(234,241,255,.92);
       font-weight: 700;
+      display:flex;
+      align-items:baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .subtitle{
+      font-size:12px;
+      color: var(--muted);
+      font-weight: 650;
+      white-space: nowrap;
     }
 
     .kpi-grid{
@@ -150,7 +150,7 @@
       padding: 12px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
+      background: rgba(255,255,255,.03);
 
       display:flex;
       flex-direction: column;
@@ -187,23 +187,23 @@
       border-radius: 999px;
       font-size: 12px;
       font-weight: 750;
-      border: 1px solid rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.16);
       font-variant-numeric: tabular-nums;
     }
     .pill.good{
       color: var(--good);
-      background: rgba(44,255,154,.16);
-      border-color: rgba(44,255,154,.30);
+      background: rgba(44,255,154,.14);
+      border-color: rgba(44,255,154,.28);
     }
     .pill.warn{
       color: var(--warn);
-      background: rgba(255,209,102,.16);
-      border-color: rgba(255,209,102,.30);
+      background: rgba(255,209,102,.14);
+      border-color: rgba(255,209,102,.28);
     }
     .pill.bad{
       color: var(--bad);
-      background: rgba(255,107,129,.16);
-      border-color: rgba(255,107,129,.30);
+      background: rgba(255,107,129,.14);
+      border-color: rgba(255,107,129,.28);
     }
 
     table{
@@ -223,9 +223,9 @@
     th{
       text-align:left;
       color: rgba(234,241,255,.92);
-      background: rgba(0,0,0,.20);
+      background: rgba(255,255,255,.03);
     }
-    tbody tr:nth-child(odd) td{ background: rgba(0,0,0,.10); }
+    tbody tr:nth-child(odd) td{ background: rgba(255,255,255,.015); }
     tbody tr:hover td{ background: rgba(255,255,255,.04); }
     .right{ text-align:right; }
 
@@ -240,7 +240,7 @@
       padding:10px 12px;
       border: 1px solid rgba(255,255,255,.14);
       border-radius: 12px;
-      background: rgba(0,0,0,.18);
+      background: rgba(255,255,255,.03);
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
@@ -273,10 +273,16 @@
   <div class="row">
     <!-- Día -->
     <section class="card">
-      <h2>KPIs (Día)</h2>
+      <h2>
+        <span>KPIs (Día)</span>
+        <span id="subtitleDay" class="subtitle"></span>
+      </h2>
       <div id="kpiGridDay" class="kpi-grid"></div>
 
-      <h2 style="margin-top:16px;">Detalle (Día)</h2>
+      <h2 style="margin-top:16px;">
+        <span>Detalle (Día)</span>
+        <span id="subtitleDay2" class="subtitle"></span>
+      </h2>
       <table>
         <thead>
           <tr>
@@ -292,10 +298,16 @@
 
     <!-- Mes -->
     <section class="card">
-      <h2>KPIs (Mes)</h2>
+      <h2>
+        <span>KPIs (Mes)</span>
+        <span id="subtitleMes" class="subtitle"></span>
+      </h2>
       <div id="kpiGridMes" class="kpi-grid"></div>
 
-      <h2 style="margin-top:16px;">Detalle (Mes)</h2>
+      <h2 style="margin-top:16px;">
+        <span>Detalle (Mes)</span>
+        <span id="subtitleMes2" class="subtitle"></span>
+      </h2>
       <table>
         <thead>
           <tr>
@@ -360,6 +372,24 @@
     el.innerHTML = "";
   }
 
+  // === Fecha actual para títulos/labels (automatiza Día/Mes según calendario) ===
+  function setAutoPeriodLabels(){
+    const now = new Date();
+
+    const dayShort = now.toLocaleDateString("es-AR", { weekday:"short" });
+    const dayDate  = now.toLocaleDateString("es-AR");
+    const monthLong = now.toLocaleDateString("es-AR", { month:"long", year:"numeric" });
+
+    document.getElementById("subtitleDay").textContent  = `${dayShort} ${dayDate}`;
+    document.getElementById("subtitleDay2").textContent = `${dayShort} ${dayDate}`;
+
+    document.getElementById("subtitleMes").textContent  = monthLong;
+    document.getElementById("subtitleMes2").textContent = monthLong;
+
+    document.getElementById("thDayLabel").textContent = `Día (${dayDate})`;
+    document.getElementById("thMesLabel").textContent = `Mes (${monthLong})`;
+  }
+
   // CSV parser (soporta comillas, comas, saltos)
   function parseCSV(text){
     const rows = [];
@@ -410,10 +440,7 @@
     let s = String(v).trim();
     if (!s) return null;
 
-    // % -> se conserva como 0-100
     s = s.replace("%","").trim();
-
-    // 1.234,56 -> 1234.56
     s = s.replace(/\./g, "");
     s = s.replace(",", ".");
 
@@ -425,11 +452,6 @@
     return String(v ?? "").includes("%");
   }
 
-  // Reglas para porcentajes:
-  // >= 80%  -> OK (verde)
-  // >= 40%  -> Atención (amarillo)
-  // < 40%   -> Crítico (rojo)
-  // No porcentuales -> "ver" (sin umbrales definidos)
   function badgeForValue(val, isPercent){
     if (val === null) return { text: "s/d", cls: "pill warn" };
 
@@ -455,7 +477,6 @@
     const headers = table[0].map(norm);
     const dataRows = table.slice(1);
 
-    // Detección por nombre
     const hLower = headers.map(h => lower(h));
     const idxIndic = hLower.findIndex(h => h.includes("indic"));
     const idxDia   = hLower.findIndex(h => h.includes("día") || h.includes("dia") || h.includes("diario"));
@@ -465,7 +486,6 @@
     let iDia   = idxDia   !== -1 ? idxDia   : 1;
     let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
 
-    // Resolver colisiones
     if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
     if (iMes === iIndic || iMes === iDia){
       const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
@@ -507,8 +527,6 @@
       const pct = mode === "day" ? it.pctDia : it.pctMes;
 
       const badge = badgeForValue(val, pct);
-
-      // Mostrar tal cual vino (mantiene coma, % etc.)
       const valText = raw === "" ? "—" : raw;
 
       const div = document.createElement("div");
@@ -581,6 +599,7 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
+        layout: { padding: { top: 6, right: 10, bottom: 18, left: 10 } },
         plugins: {
           legend: { labels: { color: "rgba(234,241,255,.92)" } },
           tooltip: {
@@ -590,8 +609,59 @@
           }
         },
         scales: {
-          x: { ticks: { color: "rgba(234,241,255,.72)" }, grid: { color: "rgba(255,255,255,.10)" } },
-          y: { ticks: { color: "rgba(234,241,255,.72)" }, grid: { color: "rgba(255,255,255,.10)" } }
+          x: {
+            ticks: {
+              color: "rgba(234,241,255,.72)",
+              align: "center",
+              autoSkip: false,
+              maxRotation: 20,
+              minRotation: 0,
+              padding: 8,
+              callback: function(value) {
+                const label = String(this.getLabelForValue(value) ?? "");
+
+                // cortes preferidos
+                const preferred = [" vs ", " de ", " para "];
+                for (const sep of preferred) {
+                  if (label.includes(sep) && label.length > 18) {
+                    const parts = label.split(sep);
+                    if (parts.length >= 2) {
+                      return [
+                        parts[0].trim(),
+                        (sep.trim() + " " + parts.slice(1).join(sep).trim())
+                      ];
+                    }
+                  }
+                }
+
+                // fallback: wrap por longitud (máx 2 líneas)
+                const max = 18;
+                if (label.length <= max) return label;
+
+                const words = label.split(" ");
+                const lines = [];
+                let cur = "";
+
+                for (const w of words) {
+                  const next = (cur ? cur + " " : "") + w;
+                  if (next.length <= max) cur = next;
+                  else {
+                    if (cur) lines.push(cur);
+                    cur = w;
+                  }
+                  if (lines.length === 2) break;
+                }
+                if (cur && lines.length < 2) lines.push(cur);
+
+                return lines;
+              }
+            },
+            grid: { color: "rgba(255,255,255,.10)" }
+          },
+          y: {
+            ticks: { color: "rgba(234,241,255,.72)" },
+            grid: { color: "rgba(255,255,255,.10)" }
+          }
         }
       }
     });
@@ -599,14 +669,13 @@
 
   async function refresh(){
     try{
+      setAutoPeriodLabels();
+
       hideHelp("day");
       hideHelp("mes");
       hideChartMsg();
 
       const { items, dayLabel, mesLabel } = await fetchData();
-
-      document.getElementById("thDayLabel").textContent = dayLabel;
-      document.getElementById("thMesLabel").textContent = mesLabel;
 
       renderKPIs(items, "day");
       renderTable(items, "day");
@@ -659,6 +728,7 @@
   document.getElementById("btnNow").addEventListener("click", () => refresh());
   document.getElementById("refreshSec").addEventListener("change", () => startTimer());
 
+  setAutoPeriodLabels();
   refresh();
   startTimer();
 </script>
