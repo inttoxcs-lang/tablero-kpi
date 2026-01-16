@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tablero KPI - Google Sheets (Día + Mes en un layout + comparativo)</title>
+  <title>Tablero KPI - Google Sheets (Día + Mes + comparativo)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
@@ -141,6 +141,7 @@
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
+      word-break: break-word;
     }
     code{ color:#cfe0ff; }
   </style>
@@ -503,22 +504,27 @@
       console.error(err);
       setStatus("error: " + err.message);
 
-      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://.");
+      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://. Si estás en GitHub Pages y falla igual, verificá que la URL de Google Sheets devuelva CSV real.");
 
       const isFile = location.protocol === "file:";
       const helpHtml = `
         <div><strong>Checklist rápido</strong></div>
         <ol style="margin:8px 0 0 18px;padding:0;">
-          <li>Si abriste el archivo como <code>file:///</code>, servilo por HTTP. Ejemplos:</li>
+          <li>Si abriste el archivo como <code>file:///</code>, servilo por HTTP:</li>
         </ol>
         <div style="margin-left:18px;">
           <div>• VSCode → extensión “Live Server”</div>
-          <div>• o en una carpeta: <code>python -m http.server 8000</code> y abrís <code>http://localhost:8000</code></div>
+          <div>• o: <code>python -m http.server 8000</code> y abrís <code>http://localhost:8000</code></div>
         </div>
         <div style="margin-top:10px;">
-          <div>2) Si sigue sin traer datos, probá cambiar <code>GID</code> (0, 1, 2…).</div>
+          <div>2) Si no trae datos, probá cambiar <code>GID</code> (0, 1, 2…).</div>
         </div>
-        ${isFile ? `<div style="margin-top:10px;">Detecté que estás en <code>file:///</code>. Eso suele bloquear <code>fetch()</code>.</div>` : ``}
+        ${isFile ? `<div style="margin-top:10px;">Detecté <code>file:///</code>: eso suele bloquear <code>fetch()</code>.</div>` : ``}
+        <div style="margin-top:10px;">
+          <div>3) Verificación directa: abrí en el navegador la URL:</div>
+          <div style="margin-top:6px;"><code>${CSV_URL}</code></div>
+          <div style="margin-top:6px;">Debería verse texto CSV (comas). Si ves HTML, no está bien publicado o el gid no corresponde.</div>
+        </div>
       `;
       showHelp("day", helpHtml);
       showHelp("mes", helpHtml);
