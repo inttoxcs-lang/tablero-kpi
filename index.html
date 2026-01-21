@@ -70,7 +70,14 @@
       justify-content: flex-end;
     }
 
-    .controls{ display:flex; gap:8px; align-items:center; }
+    /* ✅ SOLUCIÓN: permitir wrap para que no “desaparezca” en pantallas chicas */
+    .controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
     .controls label{ color: var(--muted); }
 
     input[type="number"]{
@@ -91,6 +98,7 @@
       color: var(--text);
       cursor:pointer;
       font-weight:650;
+      white-space: nowrap;
     }
     button:hover{ background: rgba(255,255,255,.06); }
 
@@ -253,16 +261,12 @@
        PDF/PRINT STYLES (DÍA)
        ========================= */
     .print-only{ display:none; }
-
     @page { size: A4; margin: 12mm; }
 
     @media print{
       body{ background:#fff !important; color:#000 !important; }
       header, .wrap{ display:none !important; }
-      #pdfDay{
-        display:block !important;
-        position:static !important;
-      }
+      #pdfDay{ display:block !important; position:static !important; }
       *{ box-shadow:none !important; text-shadow:none !important; }
     }
 
@@ -280,21 +284,9 @@
       padding-bottom:10px;
       margin-bottom:12px;
     }
-    .print-title{
-      font-size:16px;
-      font-weight:800;
-    }
-    .print-subtitle{
-      font-size:12px;
-      color: rgba(0,0,0,.70);
-      margin-top:2px;
-    }
-    .print-meta{
-      font-size:11px;
-      color: rgba(0,0,0,.70);
-      text-align:right;
-      line-height:1.35;
-    }
+    .print-title{ font-size:16px; font-weight:800; }
+    .print-subtitle{ font-size:12px; color: rgba(0,0,0,.70); margin-top:2px; }
+    .print-meta{ font-size:11px; color: rgba(0,0,0,.70); text-align:right; line-height:1.35; }
 
     .print-kpi-grid{
       display:grid;
@@ -311,16 +303,8 @@
       flex-direction:column;
       justify-content:space-between;
     }
-    .print-kpi .name{
-      font-size:11px;
-      color: rgba(0,0,0,.65);
-      line-height:1.2;
-    }
-    .print-kpi .val{
-      font-size:18px;
-      font-weight:850;
-      font-variant-numeric: tabular-nums;
-    }
+    .print-kpi .name{ font-size:11px; color: rgba(0,0,0,.65); line-height:1.2; }
+    .print-kpi .val{ font-size:18px; font-weight:850; font-variant-numeric: tabular-nums; }
 
     .print-pill{
       align-self:flex-end;
@@ -334,11 +318,7 @@
     .print-pill.warn{ color:#8a6a00; background: rgba(138,106,0,.10); border-color: rgba(138,106,0,.25); }
     .print-pill.bad{  color:#9a1b2e; background: rgba(154,27,46,.10); border-color: rgba(154,27,46,.25); }
 
-    .print-section-title{
-      font-size:12px;
-      font-weight:800;
-      margin:6px 0 6px;
-    }
+    .print-section-title{ font-size:12px; font-weight:800; margin:6px 0 6px; }
 
     .print-table{
       width:100%;
@@ -351,16 +331,9 @@
       border-bottom: 1px solid rgba(0,0,0,.10);
       font-variant-numeric: tabular-nums;
     }
-    .print-table th{
-      text-align:left;
-      background: rgba(0,0,0,.04);
-    }
+    .print-table th{ text-align:left; background: rgba(0,0,0,.04); }
 
-    .print-footnote{
-      margin-top:8px;
-      font-size:10px;
-      color: rgba(0,0,0,.60);
-    }
+    .print-footnote{ margin-top:8px; font-size:10px; color: rgba(0,0,0,.60); }
   </style>
 </head>
 
@@ -373,6 +346,8 @@
   <div class="meta">
     <div>Estado: <span id="status" class="muted">iniciando…</span></div>
     <div>Última actualización: <span id="lastUpdate" class="muted">—</span></div>
+
+    <!-- ✅ SOLUCIÓN: Header completo con el botón incluido dentro de .controls -->
     <div class="controls">
       <label for="refreshSec">Refresh (s)</label>
       <input id="refreshSec" type="number" min="5" step="5" value="30" />
@@ -767,7 +742,6 @@
               callback: function(value) {
                 const label = String(this.getLabelForValue(value) ?? "");
 
-                // cortes preferidos
                 const preferred = [" vs ", " de ", " para "];
                 for (const sep of preferred) {
                   if (label.includes(sep) && label.length > 18) {
@@ -781,7 +755,6 @@
                   }
                 }
 
-                // fallback: wrap por longitud (máx 2 líneas)
                 const max = 18;
                 if (label.length <= max) return label;
 
@@ -824,7 +797,6 @@
     document.getElementById("pdfGeneratedAt").textContent = now.toLocaleString("es-AR");
     document.getElementById("pdfThDayLabel").textContent = `Día (${dayDate})`;
 
-    // KPIs: mismos 8 del tablero
     const grid = document.getElementById("pdfKpiGridDay");
     grid.innerHTML = "";
     items.slice(0, 8).forEach(it => {
@@ -847,7 +819,6 @@
       grid.appendChild(div);
     });
 
-    // Detalle
     const body = document.getElementById("pdfDetailBodyDay");
     body.innerHTML = "";
     items.forEach(it => {
@@ -897,9 +868,6 @@
         <div style="margin-top:10px;">
           Si ves HTML en lugar de CSV (texto con comas), revisá publicación/permisos o el <code>GID</code>.
         </div>
-        <div style="margin-top:10px;">
-          Sugerencia: en GitHub Pages esto funciona por HTTPS; si estás probando local, evitá <code>file:///</code>.
-        </div>
       `;
       showHelp("day", helpHtml);
       showHelp("mes", helpHtml);
@@ -918,7 +886,7 @@
   document.getElementById("btnNow").addEventListener("click", () => refresh());
   document.getElementById("refreshSec").addEventListener("change", () => startTimer());
 
-  // Botón PDF (Día): asegura datos frescos y abre diálogo "Guardar como PDF"
+  // ✅ Listener PDF (Día) — siempre visible y funcional en GitHub Pages
   document.getElementById("btnPdfDay").addEventListener("click", async () => {
     try{
       const { items } = await fetchData();
@@ -935,364 +903,3 @@
 </script>
 </body>
 </html>
-    const now = new Date();
-
-    const dayShort = now.toLocaleDateString("es-AR", { weekday:"short" });
-    const dayDate  = now.toLocaleDateString("es-AR");
-    const monthLong = now.toLocaleDateString("es-AR", { month:"long", year:"numeric" });
-
-    document.getElementById("subtitleDay").textContent  = `${dayShort} ${dayDate}`;
-    document.getElementById("subtitleDay2").textContent = `${dayShort} ${dayDate}`;
-
-    document.getElementById("subtitleMes").textContent  = monthLong;
-    document.getElementById("subtitleMes2").textContent = monthLong;
-
-    document.getElementById("thDayLabel").textContent = `Día (${dayDate})`;
-    document.getElementById("thMesLabel").textContent = `Mes (${monthLong})`;
-  }
-
-  // CSV parser (soporta comillas, comas, saltos)
-  function parseCSV(text){
-    const rows = [];
-    let row = [];
-    let cur = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++){
-      const c = text[i];
-      const next = text[i+1];
-
-      if (c === '"'){
-        if (inQuotes && next === '"'){ cur += '"'; i++; }
-        else { inQuotes = !inQuotes; }
-        continue;
-      }
-
-      if (!inQuotes && c === ','){
-        row.push(cur); cur = "";
-        continue;
-      }
-
-      if (!inQuotes && (c === '\n' || c === '\r')){
-        if (c === '\r' && next === '\n') i++;
-        row.push(cur);
-        rows.push(row);
-        row = [];
-        cur = "";
-        continue;
-      }
-
-      cur += c;
-    }
-
-    if (cur.length || row.length){
-      row.push(cur);
-      rows.push(row);
-    }
-
-    return rows.filter(r => r.some(x => String(x).trim() !== ""));
-  }
-
-  function norm(s){ return String(s ?? "").trim(); }
-  function lower(s){ return norm(s).toLowerCase(); }
-
-  function toNumber(v){
-    if (v === null || v === undefined) return null;
-    let s = String(v).trim();
-    if (!s) return null;
-
-    s = s.replace("%","").trim();
-    s = s.replace(/\./g, "");
-    s = s.replace(",", ".");
-
-    const n = Number(s);
-    return Number.isNaN(n) ? null : n;
-  }
-
-  function isPercentLike(v){
-    return String(v ?? "").includes("%");
-  }
-
-  function badgeForValue(val, isPercent){
-    if (val === null) return { text: "s/d", cls: "pill warn" };
-
-    if (isPercent){
-      if (val >= 80) return { text: "OK", cls: "pill good" };
-      if (val >= 40) return { text: "Atención", cls: "pill warn" };
-      return { text: "Crítico", cls: "pill bad" };
-    }
-
-    return { text: "ver", cls: "pill warn" };
-  }
-
-  async function fetchData(){
-    setStatus("consultando…");
-
-    const res = await fetch(CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("No se pudo leer el CSV publicado (revisar publicación/permisos/gid).");
-
-    const csv = await res.text();
-    const table = parseCSV(csv);
-    if (table.length < 2) throw new Error("El CSV no trae datos (hoja vacía o rango publicado sin contenido).");
-
-    const headers = table[0].map(norm);
-    const dataRows = table.slice(1);
-
-    const hLower = headers.map(h => lower(h));
-    const idxIndic = hLower.findIndex(h => h.includes("indic"));
-    const idxDia   = hLower.findIndex(h => h.includes("día") || h.includes("dia") || h.includes("diario"));
-    const idxMes   = hLower.findIndex(h => h.includes("mes") || h.includes("mensual") || h.includes("acum") || h.includes("acumul"));
-
-    let iIndic = idxIndic !== -1 ? idxIndic : 0;
-    let iDia   = idxDia   !== -1 ? idxDia   : 1;
-    let iMes   = idxMes   !== -1 ? idxMes   : (headers.length >= 3 ? 2 : 1);
-
-    if (iDia === iIndic) iDia = (iIndic === 0 ? 1 : 0);
-    if (iMes === iIndic || iMes === iDia){
-      const candidates = [...headers.keys()].filter(i => i !== iIndic && i !== iDia);
-      iMes = candidates[0] ?? iMes;
-    }
-
-    const dayLabel = headers[iDia] || "Día";
-    const mesLabel = headers[iMes] || "Mes";
-
-    const items = dataRows
-      .map(r => {
-        const indicador = norm(r[iIndic]);
-        const diaRaw = norm(r[iDia]);
-        const mesRaw = norm(r[iMes]);
-        return {
-          indicador,
-          diaRaw,
-          mesRaw,
-          dia: toNumber(diaRaw),
-          mes: toNumber(mesRaw),
-          pctDia: isPercentLike(diaRaw),
-          pctMes: isPercentLike(mesRaw)
-        };
-      })
-      .filter(x => x.indicador);
-
-    if (!items.length) throw new Error("No se pudieron construir items: revisá la columna del indicador.");
-
-    return { items, dayLabel, mesLabel };
-  }
-
-  function renderKPIs(items, mode){
-    const grid = document.getElementById(mode === "day" ? "kpiGridDay" : "kpiGridMes");
-    grid.innerHTML = "";
-
-    items.slice(0, 8).forEach(it => {
-      const raw = mode === "day" ? it.diaRaw : it.mesRaw;
-      const val = mode === "day" ? it.dia : it.mes;
-      const pct = mode === "day" ? it.pctDia : it.pctMes;
-
-      const badge = badgeForValue(val, pct);
-      const valText = raw === "" ? "—" : raw;
-
-      const div = document.createElement("div");
-      div.className = "kpi";
-      div.innerHTML = `
-        <div class="name">${it.indicador}</div>
-        <div class="val">${valText}</div>
-        <div class="sub">
-          <span class="${badge.cls}">${badge.text}</span>
-        </div>
-      `;
-      grid.appendChild(div);
-    });
-  }
-
-  function renderTable(items, mode){
-    const body = document.getElementById(mode === "day" ? "detailBodyDay" : "detailBodyMes");
-    body.innerHTML = "";
-
-    items.forEach(it => {
-      const raw = mode === "day" ? it.diaRaw : it.mesRaw;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.indicador}</td>
-        <td class="right">${raw === "" ? "—" : raw}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  function renderCompareChart(items, dayLabel, mesLabel){
-    const slice = items.slice(0, 12);
-
-    const labels = [];
-    const daySeries = [];
-    const mesSeries = [];
-
-    for (const x of slice){
-      const d = Number.isFinite(x.dia) ? x.dia : null;
-      const m = Number.isFinite(x.mes) ? x.mes : null;
-
-      if (d === null && m === null) continue;
-
-      labels.push(x.indicador);
-      daySeries.push(d);
-      mesSeries.push(m);
-    }
-
-    if (!labels.length){
-      if (chartCompare) { chartCompare.destroy(); chartCompare = null; }
-      showChartMsg("No hay valores numéricos suficientes para graficar (revisá que Día/Mes sean números o porcentajes).");
-      return;
-    }
-
-    hideChartMsg();
-
-    const ctx = document.getElementById("chartCompare").getContext("2d");
-    if (chartCompare) chartCompare.destroy();
-
-    chartCompare = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          { label: dayLabel, data: daySeries },
-          { label: mesLabel, data: mesSeries }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        layout: { padding: { top: 6, right: 10, bottom: 18, left: 10 } },
-        plugins: {
-          legend: { labels: { color: "rgba(234,241,255,.92)" } },
-          tooltip: {
-            callbacks: {
-              label: (c) => `${c.dataset.label}: ${c.raw === null ? "—" : c.raw}`
-            }
-          }
-        },
-        scales: {
-          x: {
-            ticks: {
-              color: "rgba(234,241,255,.72)",
-              align: "center",
-              autoSkip: false,
-              maxRotation: 20,
-              minRotation: 0,
-              padding: 8,
-              callback: function(value) {
-                const label = String(this.getLabelForValue(value) ?? "");
-
-                // cortes preferidos
-                const preferred = [" vs ", " de ", " para "];
-                for (const sep of preferred) {
-                  if (label.includes(sep) && label.length > 18) {
-                    const parts = label.split(sep);
-                    if (parts.length >= 2) {
-                      return [
-                        parts[0].trim(),
-                        (sep.trim() + " " + parts.slice(1).join(sep).trim())
-                      ];
-                    }
-                  }
-                }
-
-                // fallback: wrap por longitud (máx 2 líneas)
-                const max = 18;
-                if (label.length <= max) return label;
-
-                const words = label.split(" ");
-                const lines = [];
-                let cur = "";
-
-                for (const w of words) {
-                  const next = (cur ? cur + " " : "") + w;
-                  if (next.length <= max) cur = next;
-                  else {
-                    if (cur) lines.push(cur);
-                    cur = w;
-                  }
-                  if (lines.length === 2) break;
-                }
-                if (cur && lines.length < 2) lines.push(cur);
-
-                return lines;
-              }
-            },
-            grid: { color: "rgba(255,255,255,.10)" }
-          },
-          y: {
-            ticks: { color: "rgba(234,241,255,.72)" },
-            grid: { color: "rgba(255,255,255,.10)" }
-          }
-        }
-      }
-    });
-  }
-
-  async function refresh(){
-    try{
-      setAutoPeriodLabels();
-
-      hideHelp("day");
-      hideHelp("mes");
-      hideChartMsg();
-
-      const { items, dayLabel, mesLabel } = await fetchData();
-
-      renderKPIs(items, "day");
-      renderTable(items, "day");
-
-      renderKPIs(items, "mes");
-      renderTable(items, "mes");
-
-      renderCompareChart(items, dayLabel, mesLabel);
-
-      setStatus("ok");
-      setLastUpdate(new Date());
-    } catch (err){
-      console.error(err);
-      setStatus("error: " + err.message);
-
-      const isFile = location.protocol === "file:";
-      const helpHtml = `
-        <div><strong>Checklist rápido</strong></div>
-        <ol style="margin:8px 0 0 18px;padding:0;">
-          <li>Si abriste el archivo como <code>file:///</code>, servilo por HTTP:</li>
-        </ol>
-        <div style="margin-left:18px;">
-          <div>• VSCode → extensión “Live Server”</div>
-          <div>• o: <code>python -m http.server 8000</code> y abrís <code>http://localhost:8000</code></div>
-        </div>
-        <div style="margin-top:10px;">
-          <div>2) Si no trae datos, probá cambiar <code>GID</code> (0, 1, 2…).</div>
-        </div>
-        ${isFile ? `<div style="margin-top:10px;">Detecté <code>file:///</code>: eso suele bloquear <code>fetch()</code>.</div>` : ``}
-        <div style="margin-top:10px;">
-          <div>3) Verificación directa: abrí en el navegador la URL:</div>
-          <div style="margin-top:6px;"><code>${CSV_URL}</code></div>
-          <div style="margin-top:6px;">Debería verse texto CSV (comas). Si ves HTML, no está bien publicado o el gid no corresponde.</div>
-        </div>
-      `;
-      showHelp("day", helpHtml);
-      showHelp("mes", helpHtml);
-      showChartMsg("No se pudo cargar el gráfico porque falló la lectura del CSV. Revisá publicación/permisos/gid o serví por HTTP si estás en file://.");
-    }
-  }
-
-  // Auto refresh
-  let timer;
-  function startTimer(){
-    if (timer) clearInterval(timer);
-    const sec = Math.max(5, Number(document.getElementById("refreshSec").value) || 30);
-    timer = setInterval(refresh, sec * 1000);
-  }
-
-  document.getElementById("btnNow").addEventListener("click", () => refresh());
-  document.getElementById("refreshSec").addEventListener("change", () => startTimer());
-
-  setAutoPeriodLabels();
-  refresh();
-  startTimer();
-</script>
-</body>
-</html>
-
