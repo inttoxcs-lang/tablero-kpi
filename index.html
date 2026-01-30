@@ -1,25 +1,25 @@
-<!-- ======== 2) GitHub Pages: index.html ======== -->
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Portal Tráfico | Transporte San José S.A</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <script defer src="./app.js"></script>
+  <title>Tablero Operativo | Tráfico - Transporte San José S.A</title>
+
+  <link rel="stylesheet" href="/tablero-kpi/styles.css?v=3" />
+  <script defer src="/tablero-kpi/app.js?v=3"></script>
 </head>
 
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="logo">TSJ</div>
-      <div>
-        <div class="title">Portal Operativo de Tráfico</div>
+      <div class="brand-text">
+        <div class="title">Tablero Operativo de Tráfico</div>
         <div class="subtitle">Transporte San José S.A</div>
       </div>
     </div>
 
-    <div class="status">
+    <div class="right">
       <div id="now" class="pill"></div>
       <div id="conn" class="pill pill-warn">Conectando…</div>
       <button id="refreshBtn" class="btn">Actualizar</button>
@@ -27,31 +27,86 @@
   </header>
 
   <main class="container">
-    <section class="controls card">
-      <div class="control">
-        <label>Fecha (si existe DIA/FECHA)</label>
-        <input type="date" id="dateFilter" />
+    <section class="panel card">
+      <div class="panel-head">
+        <div class="panel-title">Filtros</div>
+        <div class="panel-subtitle">Se aplican a la hoja activa</div>
       </div>
 
-      <div class="control">
-        <label>Búsqueda</label>
-        <input type="text" id="q" placeholder="Línea, interno, falla, motivo…" />
-      </div>
+      <div class="filters">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="dateFilter" />
+          <div class="hint">Si la hoja tiene columna DIA/FECHA, filtra por esa fecha.</div>
+        </div>
 
-      <div class="control">
-        <label>Auto-actualización</label>
-        <select id="autoRefresh">
-          <option value="0">Desactivada</option>
-          <option value="30">Cada 30s</option>
-          <option value="60" selected>Cada 60s</option>
-          <option value="120">Cada 2 min</option>
-          <option value="300">Cada 5 min</option>
-        </select>
+        <div class="field">
+          <label>Línea</label>
+          <select id="lineFilter">
+            <option value="">Todas</option>
+          </select>
+          <div class="hint">Se completa automáticamente desde los datos.</div>
+        </div>
+
+        <div class="field">
+          <label>Interno</label>
+          <input type="text" id="internoFilter" placeholder="Ej: 105, 211…" />
+          <div class="hint">Coincidencia parcial (contiene).</div>
+        </div>
+
+        <div class="field">
+          <label>Búsqueda general</label>
+          <input type="text" id="q" placeholder="Buscar en cualquier columna…" />
+          <div class="hint">Útil para fallas / motivo / resolución.</div>
+        </div>
+
+        <div class="field">
+          <label>Auto-actualización</label>
+          <select id="autoRefresh">
+            <option value="0">Off</option>
+            <option value="30">30s</option>
+            <option value="60" selected>60s</option>
+            <option value="120">2 min</option>
+            <option value="300">5 min</option>
+          </select>
+          <div class="hint">Refresca desde Google Sheets.</div>
+        </div>
+
+        <div class="field">
+          <label>Modo fecha</label>
+          <select id="dateMode">
+            <option value="today" selected>Solo hoy</option>
+            <option value="all">Todas las fechas</option>
+          </select>
+          <div class="hint">“Solo hoy” es el modo operativo.</div>
+        </div>
       </div>
     </section>
 
-    <section id="tabs" class="tabs"></section>
+    <section class="tabs-wrap">
+      <div id="tabs" class="tabs"></div>
+
+      <div class="counters">
+        <div class="counter">
+          <div class="counter-label">Total hoja</div>
+          <div id="cntTotal" class="counter-value">—</div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">Hoy</div>
+          <div id="cntToday" class="counter-value">—</div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">Mostrando</div>
+          <div id="cntShowing" class="counter-value">—</div>
+        </div>
+      </div>
+    </section>
+
     <section id="content" class="content"></section>
   </main>
+
+  <footer class="footer">
+    <div>Tablero Operativo • Vista de lectura • Fuente: Google Sheets</div>
+  </footer>
 </body>
 </html>
