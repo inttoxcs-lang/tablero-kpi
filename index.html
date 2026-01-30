@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tablero Operativo | Tráfico - Transporte San José S.A</title>
 
-  <link rel="stylesheet" href="/tablero-kpi/styles.css?v=3" />
-  <script defer src="/tablero-kpi/app.js?v=3"></script>
+  <link rel="stylesheet" href="/tablero-kpi/styles.css?v=10" />
+  <script defer src="/tablero-kpi/app.js?v=10"></script>
 </head>
 
 <body>
-  <header class="topbar">
+  <header class="topbar" id="topbar">
     <div class="brand">
       <div class="logo">TSJ</div>
       <div class="brand-text">
@@ -26,18 +26,47 @@
     </div>
   </header>
 
-  <main class="container">
-    <section class="panel card">
+  <main class="container" id="main">
+    <section class="panel card" id="filtersPanel">
       <div class="panel-head">
-        <div class="panel-title">Filtros</div>
-        <div class="panel-subtitle">Se aplican a la hoja activa</div>
+        <div>
+          <div class="panel-title">Filtros</div>
+          <div class="panel-subtitle">Se aplican a la hoja activa</div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="todayBtn" class="btn btn-ghost" type="button">Hoy</button>
+          <button id="clearBtn" class="btn btn-ghost" type="button">Limpiar</button>
+          <button id="toggleFiltersBtn" class="btn btn-ghost" type="button">Ocultar filtros</button>
+
+          <label class="switch" title="Vista compacta">
+            <input id="compactToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <span class="switch-label">Compacta</span>
+
+          <label class="switch" title="Vista pared">
+            <input id="wallToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <span class="switch-label">Pared</span>
+        </div>
       </div>
 
-      <div class="filters">
+      <div class="filters" id="filtersGrid">
         <div class="field">
           <label>Fecha</label>
           <input type="date" id="dateFilter" />
-          <div class="hint">Si la hoja tiene columna DIA/FECHA, filtra por esa fecha.</div>
+          <div class="hint">Si existe FECHA/DIA, filtra por esa fecha.</div>
+        </div>
+
+        <div class="field">
+          <label>Modo fecha</label>
+          <select id="dateMode">
+            <option value="today" selected>Solo hoy</option>
+            <option value="all">Todas</option>
+          </select>
+          <div class="hint">Modo operativo recomendado: Solo hoy.</div>
         </div>
 
         <div class="field">
@@ -45,19 +74,30 @@
           <select id="lineFilter">
             <option value="">Todas</option>
           </select>
-          <div class="hint">Se completa automáticamente desde los datos.</div>
+          <div class="hint">Se completa automáticamente.</div>
         </div>
 
         <div class="field">
           <label>Interno</label>
           <input type="text" id="internoFilter" placeholder="Ej: 105, 211…" />
-          <div class="hint">Coincidencia parcial (contiene).</div>
+          <div class="hint">Coincidencia parcial.</div>
         </div>
 
         <div class="field">
-          <label>Búsqueda general</label>
+          <label>Estado</label>
+          <select id="statusFilter">
+            <option value="">Todos</option>
+            <option value="ABIERTO">ABIERTO</option>
+            <option value="EN PROCESO">EN PROCESO</option>
+            <option value="CERRADO">CERRADO</option>
+          </select>
+          <div class="hint">Requiere columna ESTADO.</div>
+        </div>
+
+        <div class="field">
+          <label>Búsqueda</label>
           <input type="text" id="q" placeholder="Buscar en cualquier columna…" />
-          <div class="hint">Útil para fallas / motivo / resolución.</div>
+          <div class="hint">Fallas / motivo / resolución.</div>
         </div>
 
         <div class="field">
@@ -73,12 +113,13 @@
         </div>
 
         <div class="field">
-          <label>Modo fecha</label>
-          <select id="dateMode">
-            <option value="today" selected>Solo hoy</option>
-            <option value="all">Todas las fechas</option>
+          <label>Vista</label>
+          <select id="density">
+            <option value="normal" selected>Normal</option>
+            <option value="compact">Compacta</option>
+            <option value="ultra">Ultra compacta</option>
           </select>
-          <div class="hint">“Solo hoy” es el modo operativo.</div>
+          <div class="hint">Más filas visibles en monitor.</div>
         </div>
       </div>
     </section>
@@ -99,13 +140,25 @@
           <div class="counter-label">Mostrando</div>
           <div id="cntShowing" class="counter-value">—</div>
         </div>
+        <div class="counter">
+          <div class="counter-label">Abiertos</div>
+          <div id="cntOpen" class="counter-value">—</div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">En proceso</div>
+          <div id="cntProg" class="counter-value">—</div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">Cerrados</div>
+          <div id="cntClosed" class="counter-value">—</div>
+        </div>
       </div>
     </section>
 
     <section id="content" class="content"></section>
   </main>
 
-  <footer class="footer">
+  <footer class="footer" id="footer">
     <div>Tablero Operativo • Vista de lectura • Fuente: Google Sheets</div>
   </footer>
 </body>
