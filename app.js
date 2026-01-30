@@ -4,7 +4,7 @@ let state = {
   data: {},
   activeSheet: null,
   timer: null,
-  idx: { date: -1, line: -1, interno: -1 }
+  idx: { date: -1, line: -1, interno: -1, status: -1 }
 };
 
 const $ = (id) => document.getElementById(id);
@@ -17,13 +17,25 @@ const elDate = $("dateFilter");
 const elDateMode = $("dateMode");
 const elLine = $("lineFilter");
 const elInterno = $("internoFilter");
+const elStatus = $("statusFilter");
 const elQ = $("q");
 const elAuto = $("autoRefresh");
 const elRefresh = $("refreshBtn");
+const elDensity = $("density");
 
 const elCntTotal = $("cntTotal");
 const elCntToday = $("cntToday");
 const elCntShowing = $("cntShowing");
+const elCntOpen = $("cntOpen");
+const elCntProg = $("cntProg");
+const elCntClosed = $("cntClosed");
+
+const elCompact = $("compactToggle");
+const elWall = $("wallToggle");
+const elFiltersPanel = $("filtersPanel");
+const elToggleFiltersBtn = $("toggleFiltersBtn");
+const elTodayBtn = $("todayBtn");
+const elClearBtn = $("clearBtn");
 
 function setConn(kind, msg){
   elConn.textContent = msg;
@@ -35,22 +47,76 @@ function isoToday(){
   const tz = new Date(d.getTime() - d.getTimezoneOffset()*60000);
   return tz.toISOString().slice(0,10);
 }
+function tickNow(){ elNow.textContent = new Date().toLocaleString("es-AR"); }
+setInterval(tickNow, 1000); tickNow();
+elDate.value = isoToday();
 
-function tickNow(){
-  elNow.textContent = new Date().toLocaleString("es-AR");
+const LS = {
+  compact: "tsj_compact_v2",
+  wall: "tsj_wall_v1",
+  collapsed: "tsj_filters_collapsed_v2",
+  density: "tsj_density_v1"
+};
+
+function applyCompact(on){
+  document.body.classList.toggle("compact", !!on);
+  elCompact.checked = !!on;
+  localStorage.setItem(LS.compact, on ? "1" : "0");
 }
-setInterval(tickNow, 1000);
-tickNow();
+function applyWall(on){
+  document.body.classList.toggle("wall", !!on);
+  elWall.checked = !!on;
+  // en pared, fuerza compacta
+  if (on) { applyCompact(true); applyCollapsed(true); }
+  localStorage.setItem(LS.wall, on ? "1" : "0");
+}
+function applyCollapsed(on){
+  elFiltersPanel.classList.toggle("collapsed", !!on);
+  elToggleFiltersBtn.textContent = on ? "Mostrar filtros" : "Ocultar filtros";
+  localStorage.setItem(LS.collapsed, on ? "1" : "0");
+}
+function applyDensity(mode){
+  document.body.classList.toggle("ultra", mode === "ultra");
+  // compacta se maneja aparte; ultra es un extra
+  elDensity.value = mode;
+  localStorage.setItem(LS.density, mode);
+}
 
-elDate.value = isoToday(); // modo operativo: hoy
+// restore
+applyCompact(localStorage.getItem(LS.compact) === "1");
+applyWall(localStorage.getItem(LS.wall) === "1");
+applyCollapsed(localStorage.getItem(LS.collapsed) === "1");
+applyDensity(localStorage.getItem(LS.density) || "normal");
+
+// events
+elCompact.addEventListener("change", () => applyCompact(elCompact.checked));
+elWall.addEventListener("change", () => applyWall(elWall.checked));
+elToggleFiltersBtn.addEventListener("click", () => applyCollapsed(!elFiltersPanel.classList.contains("collapsed")));
+elDensity.addEventListener("change", () => applyDensity(elDensity.value));
+
+elTodayBtn.addEventListener("click", () => {
+  elDate.value = isoToday();
+  elDateMode.value = "today";
+  hydrateLineOptions();
+  renderActive();
+});
+
+elClearBtn.addEventListener("click", () => {
+  elLine.value = "";
+  elInterno.value = "";
+  elStatus.value = "";
+  elQ.value = "";
+  renderActive();
+});
 
 elRefresh.addEventListener("click", () => loadAll(true));
 elAuto.addEventListener("change", setupAutoRefresh);
 
-elDate.addEventListener("change", renderActive);
-elDateMode.addEventListener("change", renderActive);
+elDate.addEventListener("change", () => { hydrateLineOptions(); renderActive(); });
+elDateMode.addEventListener("change", () => { hydrateLineOptions(); renderActive(); });
 elLine.addEventListener("change", renderActive);
 elInterno.addEventListener("input", renderActive);
+elStatus.addEventListener("change", renderActive);
 elQ.addEventListener("input", renderActive);
 
 function loadJsonp(url){
@@ -89,7 +155,7 @@ async function loadAll(manual=false){
     }
 
     renderTabs(sheets);
-    hydrateLineOptions(); // llena combo linea según hoja activa y fecha
+    hydrateLineOptions();
     renderActive();
 
     setConn("ok", "Conectado");
@@ -97,9 +163,9 @@ async function loadAll(manual=false){
     console.error(e);
     setConn("bad", "Sin conexión");
     elContent.innerHTML = `<div class="card sheet">
-      No se pudo cargar el Google Sheet. Revisá:
+      No se pudo cargar el Google Sheet. Verificar Apps Script:
       <div style="margin-top:8px;color:rgba(169,181,214,.85);font-size:12px">
-        Apps Script: acceso “Cualquiera” + redeploy “Nueva versión”.
+        Acceso “Cualquiera” + redeploy “Nueva versión”.
       </div>
     </div>`;
   }
@@ -113,9 +179,9 @@ function renderTabs(sheets){
     b.textContent = name;
     b.addEventListener("click", () => {
       state.activeSheet = name;
-      // reset filtros específicos hoja
       elLine.value = "";
       elInterno.value = "";
+      elStatus.value = "";
       elQ.value = "";
       hydrateLineOptions();
       renderTabs(sheets);
@@ -125,25 +191,22 @@ function renderTabs(sheets){
   });
 }
 
-/** Detecta columnas por encabezado */
 function computeIndexes(headers){
   const norm = headers.map(h => String(h||"").trim().toUpperCase());
 
   const idxDate = norm.findIndex(h => ["DIA","FECHA","DATE"].includes(h));
   const idxLine = norm.findIndex(h => ["LINEA","LÍNEA","LINE"].includes(h));
   const idxInt  = norm.findIndex(h => ["INTERNO","INT","COCHE","UNIDAD","INTERNA"].includes(h));
+  const idxSt   = norm.findIndex(h => ["ESTADO","STATUS"].includes(h));
 
-  state.idx = { date: idxDate, line: idxLine, interno: idxInt };
+  state.idx = { date: idxDate, line: idxLine, interno: idxInt, status: idxSt };
 }
 
 function normalizeDateCell(s){
   const v = String(s ?? "").trim();
   if (!v) return "";
-
-  // yyyy-mm-dd
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
 
-  // dd/mm/yyyy o dd-mm-yyyy
   const m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (m){
     const dd = String(m[1]).padStart(2,"0");
@@ -151,30 +214,33 @@ function normalizeDateCell(s){
     const yyyy = m[3];
     return `${yyyy}-${mm}-${dd}`;
   }
-
-  // Si viene como Date (Sheets a veces lo trae como objeto Date serializado raro),
-  // intentamos parsear por Date()
   const d = new Date(v);
   if (!isNaN(d.getTime())){
     const tz = new Date(d.getTime() - d.getTimezoneOffset()*60000);
     return tz.toISOString().slice(0,10);
   }
-
   return "";
 }
 
-/** Arma el select de líneas según hoja activa y fecha (si aplica) */
+function normStatus(v){
+  const s = String(v ?? "").trim().toUpperCase();
+  if (!s) return "";
+  if (s.includes("ABIER")) return "ABIERTO";
+  if (s.includes("PROCES")) return "EN PROCESO";
+  if (s.includes("CERR")) return "CERRADO";
+  return s;
+}
+
 function hydrateLineOptions(){
   const sheet = state.data[state.activeSheet];
   if (!sheet) return;
 
   const headers = sheet.headers || [];
   const rows = sheet.rows || [];
-
   computeIndexes(headers);
+
   const { date: idxDate, line: idxLine } = state.idx;
 
-  // Si no hay columna LINEA, dejamos el select pero sin opciones extra
   const base = `<option value="">Todas</option>`;
   if (idxLine < 0){
     elLine.innerHTML = base;
@@ -183,12 +249,11 @@ function hydrateLineOptions(){
   }
   elLine.disabled = false;
 
-  const dateMode = elDateMode.value; // today/all
+  const dateMode = elDateMode.value;
   const targetDate = elDate.value;
 
   const set = new Set();
   rows.forEach(r => {
-    // En modo “Solo hoy”, recorta opciones a lo de hoy (si hay fecha)
     if (dateMode === "today" && idxDate >= 0 && targetDate){
       const norm = normalizeDateCell(r[idxDate]);
       if (norm && norm !== targetDate) return;
@@ -198,82 +263,74 @@ function hydrateLineOptions(){
   });
 
   const options = Array.from(set).sort((a,b)=>a.localeCompare(b, "es", {numeric:true}));
+  const current = elLine.value;
+
   elLine.innerHTML = base + options.map(v => `<option value="${escapeHtmlAttr(v)}">${escapeHtml(v)}</option>`).join("");
+  if (current) elLine.value = current;
 }
 
 function renderActive(){
   const sheet = state.data[state.activeSheet];
   if (!sheet){
     elContent.innerHTML = `<div class="card sheet">No hay datos.</div>`;
-    elCntTotal.textContent = "—";
-    elCntToday.textContent = "—";
-    elCntShowing.textContent = "—";
+    setCounts(null);
     return;
   }
 
   const headers = sheet.headers || [];
   const rows = sheet.rows || [];
-
   computeIndexes(headers);
-  const { date: idxDate, line: idxLine, interno: idxInt } = state.idx;
 
-  const dateMode = elDateMode.value;   // today/all
-  const targetDate = elDate.value;     // yyyy-mm-dd
+  const { date: idxDate, line: idxLine, interno: idxInt, status: idxSt } = state.idx;
+
+  const dateMode = elDateMode.value;
+  const targetDate = elDate.value;
   const lineVal = (elLine.value || "").trim();
   const internoVal = (elInterno.value || "").trim().toLowerCase();
+  const statusVal = (elStatus.value || "").trim().toUpperCase();
   const q = (elQ.value || "").trim().toLowerCase();
 
-  // Contadores base
   const total = rows.length;
 
-  // Count "today" si existe fecha
-  let todayCount = 0;
-  if (idxDate >= 0){
-    todayCount = rows.reduce((acc, r) => {
-      const norm = normalizeDateCell(r[idxDate]);
-      return acc + (norm && norm === targetDate ? 1 : 0);
-    }, 0);
-  } else {
-    // Si no hay fecha, "Hoy" = total (no se puede cortar)
-    todayCount = total;
-  }
+  const isTodayRow = (r) => {
+    if (idxDate < 0 || !targetDate) return true;
+    const norm = normalizeDateCell(r[idxDate]);
+    return !norm || norm === targetDate;
+  };
 
-  // Aplicar filtros
+  const todayCount = (idxDate >= 0) ? rows.filter(isTodayRow).length : total;
+
   let filtered = rows.filter(r => {
-    // Fecha: modo operativo por defecto
     if (dateMode === "today" && idxDate >= 0 && targetDate){
-      const norm = normalizeDateCell(r[idxDate]);
-      if (norm && norm !== targetDate) return false;
+      if (!isTodayRow(r)) return false;
     }
-
-    // Línea
     if (idxLine >= 0 && lineVal){
       const v = String(r[idxLine] ?? "").trim();
       if (v !== lineVal) return false;
     }
-
-    // Interno
     if (idxInt >= 0 && internoVal){
       const v = String(r[idxInt] ?? "").toLowerCase();
       if (!v.includes(internoVal)) return false;
     }
-
-    // Búsqueda general
+    if (statusVal && idxSt >= 0){
+      const st = normStatus(r[idxSt]);
+      if (st !== statusVal) return false;
+    } else if (statusVal && idxSt < 0){
+      return false; // pidieron estado pero no existe columna
+    }
     if (q){
       const hay = r.some(c => String(c ?? "").toLowerCase().includes(q));
       if (!hay) return false;
     }
-
     return true;
   });
 
-  // Ordenado: si hay fecha, por fecha desc (más reciente primero), y luego por texto
+  // Orden por fecha desc y luego interno
   if (idxDate >= 0){
     filtered = filtered.slice().sort((a,b) => {
       const da = normalizeDateCell(a[idxDate]) || "0000-00-00";
       const db = normalizeDateCell(b[idxDate]) || "0000-00-00";
-      if (da !== db) return db.localeCompare(da); // desc
-      // fallback: por interno si existe
+      if (da !== db) return db.localeCompare(da);
       if (idxInt >= 0){
         const ia = String(a[idxInt] ?? "");
         const ib = String(b[idxInt] ?? "");
@@ -283,48 +340,66 @@ function renderActive(){
     });
   }
 
-  // Contadores finales
-  elCntTotal.textContent = String(total);
-  elCntToday.textContent = String(todayCount);
-  elCntShowing.textContent = String(filtered.length);
+  // Contadores por estado (solo si existe columna)
+  let open=0, prog=0, closed=0;
+  if (idxSt >= 0){
+    const baseRows = (dateMode === "today") ? rows.filter(isTodayRow) : rows;
+    baseRows.forEach(r => {
+      const st = normStatus(r[idxSt]);
+      if (st === "ABIERTO") open++;
+      else if (st === "EN PROCESO") prog++;
+      else if (st === "CERRADO") closed++;
+    });
+  }
 
-  // Rehidratar líneas si cambió fecha/mode (para que coincidan con el contexto operativo)
-  // (sin pisar selección actual si existe)
-  const currentLine = elLine.value;
-  hydrateLineOptions();
-  if (currentLine) elLine.value = currentLine;
+  setCounts({ total, todayCount, showing: filtered.length, open, prog, closed, hasStatus: idxSt >= 0 });
 
-  // Render tabla
+  // Render tabla con semáforo por fila
+  const idxStatusForRow = idxSt;
+
   elContent.innerHTML = `
     <div class="card sheet">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <div class="tag ${dateMode === "today" ? "ok" : "warn"}">
-          ${dateMode === "today" ? "Modo operativo: HOY" : "Modo: todas las fechas"}
-        </div>
-        <div class="tag">
-          Hoja: <strong style="color:var(--text)">${escapeHtml(state.activeSheet || "")}</strong>
-        </div>
-        ${idxDate >= 0 ? `<div class="tag">Fecha detectada ✓</div>` : `<div class="tag warn">Sin columna fecha</div>`}
-        ${idxLine >= 0 ? `<div class="tag">Línea detectada ✓</div>` : `<div class="tag warn">Sin columna línea</div>`}
-        ${idxInt  >= 0 ? `<div class="tag">Interno detectado ✓</div>` : `<div class="tag warn">Sin columna interno</div>`}
-      </div>
-
       <div class="table-wrap">
         <table>
           <thead>
             <tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
           </thead>
           <tbody>
-            ${filtered.map(r => `
-              <tr>
+            ${filtered.map(r => {
+              const rowClass = (idxStatusForRow >= 0)
+                ? (normStatus(r[idxStatusForRow]) === "ABIERTO" ? "row-open" :
+                   normStatus(r[idxStatusForRow]) === "EN PROCESO" ? "row-prog" :
+                   normStatus(r[idxStatusForRow]) === "CERRADO" ? "row-closed" : "")
+                : "";
+
+              return `<tr class="${rowClass}">
                 ${headers.map((_,i)=>`<td>${escapeHtml(r[i])}</td>`).join("")}
-              </tr>
-            `).join("")}
+              </tr>`;
+            }).join("")}
           </tbody>
         </table>
       </div>
     </div>
   `;
+}
+
+function setCounts(payload){
+  if (!payload){
+    elCntTotal.textContent = elCntToday.textContent = elCntShowing.textContent = "—";
+    elCntOpen.textContent = elCntProg.textContent = elCntClosed.textContent = "—";
+    return;
+  }
+  elCntTotal.textContent = String(payload.total);
+  elCntToday.textContent = String(payload.todayCount);
+  elCntShowing.textContent = String(payload.showing);
+
+  if (payload.hasStatus){
+    elCntOpen.textContent = String(payload.open);
+    elCntProg.textContent = String(payload.prog);
+    elCntClosed.textContent = String(payload.closed);
+  } else {
+    elCntOpen.textContent = elCntProg.textContent = elCntClosed.textContent = "—";
+  }
 }
 
 function escapeHtml(v){
@@ -333,9 +408,7 @@ function escapeHtml(v){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[ch]));
 }
-function escapeHtmlAttr(v){
-  return escapeHtml(v).replace(/"/g, "&quot;");
-}
+function escapeHtmlAttr(v){ return escapeHtml(v).replace(/"/g, "&quot;"); }
 
 function setupAutoRefresh(){
   if (state.timer) clearInterval(state.timer);
@@ -343,6 +416,5 @@ function setupAutoRefresh(){
   if (sec > 0) state.timer = setInterval(() => loadAll(false), sec * 1000);
 }
 
-// INIT
 setupAutoRefresh();
 loadAll(false);
