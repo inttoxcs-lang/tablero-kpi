@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portal Tráfico | Transporte San José S.A</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">TSJ</div>
+      <div>
+        <div class="title">Portal Operativo de Tráfico</div>
+        <div class="subtitle">Transporte San José S.A</div>
+      </div>
+    </div>
+
+    <div class="status">
+      <div id="now" class="pill"></div>
+      <div id="conn" class="pill pill-warn">Conectando…</div>
+      <button id="refreshBtn" class="btn">Actualizar</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls card">
+      <div class="control">
+        <label>Fecha (si existe DIA/FECHA)</label>
+        <input type="date" id="dateFilter" />
+      </div>
+
+      <div class="control">
+        <label>Búsqueda</label>
+        <input type="text" id="q" placeholder="Línea, interno, falla, motivo…" />
+      </div>
+
+      <div class="control">
+        <label>Auto-actualización</label>
+        <select id="autoRefresh">
+          <option value="0">Desactivada</option>
+          <option value="30">Cada 30s</option>
+          <option value="60" selected>Cada 60s</option>
+          <option value="120">Cada 2 min</option>
+          <option value="300">Cada 5 min</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="tabs" class="tabs"></section>
+    <section id="content" class="content"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
