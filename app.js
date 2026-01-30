@@ -1,4 +1,4 @@
-// URL del Apps Script (Web App) - ya pegada ✅
+// URL del Apps Script (Web App) ✅
 const API_URL = "https://script.google.com/macros/s/AKfycbxOmmT09Q15TI5w3oumKXvQrtMRzLQwZLNzGbc1LlhiUXEO1FK2X3EVmOTnLqLiy90/exec";
 
 let state = {
@@ -19,7 +19,7 @@ const elRefresh = document.getElementById("refreshBtn");
 function isoToday() {
   const d = new Date();
   const tz = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-  return tz.toISOString().slice(0,10);
+  return tz.toISOString().slice(0, 10);
 }
 
 function tickNow() {
@@ -40,12 +40,46 @@ function setConn(ok, msg) {
   elConn.className = "pill " + (ok ? "pill-ok" : "pill-warn");
 }
 
+// ✅ JSONP loader (evita CORS)
+function loadJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = "__cb_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    const sep = url.includes("?") ? "&" : "?";
+    script.src = `${url}${sep}callback=${cbName}&_=${Date.now()}`; // cache-bust
+
+    window[cbName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("JSONP load error"));
+    };
+
+    function cleanup() {
+      try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    document.body.appendChild(script);
+
+    // timeout defensivo
+    setTimeout(() => {
+      if (window[cbName]) {
+        cleanup();
+        reject(new Error("JSONP timeout"));
+      }
+    }, 15000);
+  });
+}
+
 async function loadAll(manual = false) {
   try {
     setConn(false, manual ? "Actualizando…" : "Conectando…");
-    const res = await fetch(API_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const json = await res.json();
+
+    const json = await loadJsonp(API_URL);
 
     state.data = json;
     const sheets = Object.keys(json);
@@ -59,7 +93,7 @@ async function loadAll(manual = false) {
     setConn(true, "Conectado");
   } catch (e) {
     console.error(e);
-    elContent.innerHTML = `<div class="card sheet">No se pudo cargar el Sheet. Revisá permisos del Apps Script y que sea "Cualquiera".</div>`;
+    elContent.innerHTML = `<div class="card sheet">No se pudo cargar el Sheet. Revisá que el Apps Script esté redeployado como “Nueva versión” y con acceso “Cualquiera”.</div>`;
     elConn.className = "pill pill-bad";
     elConn.textContent = "Sin conexión";
   }
@@ -92,21 +126,18 @@ function renderActive() {
   const q = (elQ.value || "").trim().toLowerCase();
   const dateStr = elDate.value;
 
-  // Detecta columna DIA/FECHA si existe
   const idxDia = headers.findIndex(h => {
     const up = String(h || "").trim().toUpperCase();
     return up === "DIA" || up === "FECHA" || up === "DATE";
   });
 
   const filtered = rows.filter(r => {
-    // Filtro por fecha (solo si existe columna)
     if (idxDia >= 0 && dateStr) {
       const cell = String(r[idxDia] ?? "").trim();
       const norm = normalizeDate(cell);
       if (norm && norm !== dateStr) return false;
     }
 
-    // Búsqueda libre
     if (q) {
       const hay = r.some(c => String(c ?? "").toLowerCase().includes(q));
       if (!hay) return false;
@@ -123,7 +154,7 @@ function renderActive() {
         <tbody>
           ${filtered.map(r => `
             <tr>
-              ${headers.map((_,i)=>`<td>${escapeHtml(r[i])}</td>`).join("")}
+              ${headers.map((_, i) => `<td>${escapeHtml(r[i])}</td>`).join("")}
             </tr>
           `).join("")}
         </tbody>
@@ -134,26 +165,26 @@ function renderActive() {
 
 function normalizeDate(s) {
   if (!s) return "";
-
-  // yyyy-mm-dd
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
 
-  // dd/mm/yyyy o dd-mm-yyyy
   const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (m) {
-    const dd = String(m[1]).padStart(2,"0");
-    const mm = String(m[2]).padStart(2,"0");
+    const dd = String(m[1]).padStart(2, "0");
+    const mm = String(m[2]).padStart(2, "0");
     const yyyy = m[3];
     return `${yyyy}-${mm}-${dd}`;
   }
-
   return "";
 }
 
 function escapeHtml(v) {
   const s = String(v ?? "");
   return s.replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
   }[ch]));
 }
 
